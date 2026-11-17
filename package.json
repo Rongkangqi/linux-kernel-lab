@@ -1,0 +1,14 @@
+{
+  "name": "linux-kernel-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Linux 内核、ARM64 与 RK3576 系统学习实验室",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "dev": "node scripts/serve.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": { "marked": "18.2.1" }
+}
