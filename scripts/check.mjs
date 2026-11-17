@@ -16,6 +16,7 @@ for(const p of built.pages){
   assert(p.html.length>500,`Empty or placeholder document: ${p.id}`);
   assert(p.toc.length>=3,`Missing document structure: ${p.id}`);
   const markdown=await read(p.source);
+  assert.equal(await read(`dist/${p.source}`),markdown,`Downloadable Markdown is missing or stale: ${p.id}`);
   assert.equal((markdown.match(/^```/gm)||[]).length%2,0,`Unclosed code fence: ${p.id}`);
   assert(!/C:\\Users\\|token=|password=/i.test(markdown),`Private environment detail in ${p.id}`);
   for(const link of markdown.matchAll(/\]\(([\w-]+)\.md\)/g)) { assert(ids.has(link[1]),`Broken document link ${p.id} → ${link[1]}`); assert(p.html.includes(`#/docs/${link[1]}`),`Document route was not generated: ${p.id}`); links++; }
