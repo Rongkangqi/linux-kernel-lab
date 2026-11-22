@@ -45,8 +45,10 @@
 设一个设备一次只接受一个请求。进程发起请求并等待，一个硬中断处理程序确认设备已完成，一个工作线程负责可能睡眠的收尾。IRQ 是硬件中断请求，workqueue 是把工作交给内核工作线程执行的机制。先在有对应设备的板上只读采两次中断计数。
 
 ```bash
+# 先保存业务开始前的每 CPU 中断计数。
 cat /proc/interrupts > irq.before
 # 此时运行一次这个设备已经验证过的正常业务
+# 业务结束时再取快照，在 diff 中找目标 IRQ 的哪一列增长了。
 cat /proc/interrupts > irq.after
 diff -u irq.before irq.after
 ```

@@ -11,50 +11,50 @@
 保存为 `touch.c`。若开发板带有 C 编译器，直接执行下方命令。交叉编译时使用与目标镜像 ABI、动态加载器匹配的 SDK 编译器。
 
 ```c
+/* 先启用扩展声明，后面的 mmap 使用 MAP_ANONYMOUS。 */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/mman.h>
-#include <sys/resource.h>
+#include <sys/resource.h>  /* getrusage 提供进程累计的次缺页数。 */
 #include <unistd.h>
 
 int main(void)
 {
+    /* 步长来自正在运行的内核。申请 2 MiB，再按本机基础页大小跨页。 */
     long page = sysconf(_SC_PAGESIZE);
     size_t bytes = 2 * 1024 * 1024;
     if (page <= 0) return 1;
+    /* 匿名私有映射允许读写。volatile 保留两遍逐页写入，即使程序没有读回每个值。 */
     volatile unsigned char *p = mmap(NULL, bytes, PROT_READ | PROT_WRITE,
                                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (p == MAP_FAILED) { perror("mmap"); return 1; }
+    if (p == MAP_FAILED) { perror("mmap"); return 1; }  /* 失败时先报告 mmap 错误，再退出。 */
 
+    /* 三个快照依次对应写前、第一遍写完、第二遍写完。RUSAGE_SELF 统计整个进程。 */
     struct rusage sample[3];
     if (getrusage(RUSAGE_SELF, &sample[0])) return 1;
+    /* 两遍走同一批地址。第一遍为新映射准备可写页，第二遍通常能复用已驻留的页。 */
     for (int pass = 0; pass < 2; ++pass) {
         for (size_t i = 0; i < bytes; i += (size_t)page)
-            p[i] = (unsigned char)(pass + 1);
-        if (getrusage(RUSAGE_SELF, &sample[pass + 1])) return 1;
+            p[i] = (unsigned char)(pass + 1);  /* 两遍分别写 1 和 2，以页首字节代表一次访问。 */
+        if (getrusage(RUSAGE_SELF, &sample[pass + 1])) return 1;  /* 此时才取样，因此相邻快照的差覆盖完整一遍。 */
     }
+    /* ru_minflt 是累计值。分别做两次差，比较两遍写入；透明大页等因素会改变实际次数。 */
     printf("page=%ld first=%ld second=%ld\n", page,
            sample[1].ru_minflt - sample[0].ru_minflt,
            sample[2].ru_minflt - sample[1].ru_minflt);
-    return munmap((void *)p, bytes) != 0;
+    return munmap((void *)p, bytes) != 0;  /* 归还映射，用退出码反映 munmap 是否成功。 */
 }
 ```
 
-- **先定采样点，再数触页。** 第 9–14 行核对页长并映射 2 MiB 私有匿名区。
-- 第 16–17 行在写入前采一次累计值。
-- 第 18–20 行外层控制两遍，内层每次跨一个实际页长，只写页首字节；`volatile` 让写操作保留下来。
-- 第 21 行在每一遍结束后再采样。
-- 第 23–25 行分别算第二次减第一次、第三次减第二次，得到两遍各自的次缺页增量。
-- 第 26 行解除映射。
-
 ```bash
+# 生成在当前机器上运行的 touch；这里 -O2 也用来检验 volatile 访问。
 cc -O2 -Wall -Wextra touch.c -o touch
+# 把运行内核的机器架构与结果一起保存。
 uname -m
+# 每次执行都建立全新的映射。对比同一行输出里的 first 和 second，再看两次运行是否一致。
 ./touch
 ./touch
 ```
-
-第一行用当前环境的编译器生成 `touch`，第二行记录运行平台。后两行是两次独立进程，每次都从一份新映射开始；区分同一进程里的第二遍写与整个程序的第二次运行。
 
 ## 把一次输出还原成访存过程
 

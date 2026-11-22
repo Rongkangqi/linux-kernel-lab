@@ -16,8 +16,10 @@
 
 ```bash
 # 在你自己的内核源码目录执行
+# 同时记下便于阅读的版本和精确提交号。dirty 后缀提示工作树有本地修改。
 git describe --always --dirty
 git rev-parse HEAD
+# 先定位任务结构，再找唤醒和调度入口。保留行号，便于回到同一版本上下文。
 rg -n 'struct task_struct' include/linux/sched.h
 rg -n 'try_to_wake_up|schedule\(' kernel/sched
 ```
@@ -37,12 +39,15 @@ rg -n 'try_to_wake_up|schedule\(' kernel/sched
 ```bash
 python3 - <<'PY'
 import os
+# 匿名管道一次返回读、写两个 fd。只把读端设为非阻塞。
 r, w = os.pipe()
 os.set_blocking(r, False)
 try:
+    # 写端仍开着且没有字节可读，这次读取会立即报 EAGAIN。
     os.read(r, 1)
 except BlockingIOError:
     print("writer open: EAGAIN")
+# 关闭唯一写端。缓冲区一直为空，下一次读应当得到 b''，即 EOF。
 os.close(w)
 print("writer closed:", repr(os.read(r, 1)))
 os.close(r)

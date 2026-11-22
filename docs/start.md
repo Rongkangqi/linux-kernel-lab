@@ -26,7 +26,9 @@
 打开 Ubuntu 终端，试着查「正在接收我输入的这个 shell 是谁」。shell 是解释命令的用户进程。`$$` 由 shell 展开为自己的进程号，`/proc` 是内核把运行状态呈现为文件的接口。在同一个终端运行两行。
 
 ```bash
+# 两个命令都用 $$ 取得当前 shell 的 PID，便于把同一进程的终端输出和内核记录对上。
 printf 'shell PID = %s\n' "$$"
+# 从 status 中选出程序名、线程组号、本线程号和线程数。
 grep -E '^(Name|Tgid|Pid|Threads):' "/proc/$$/status"
 ```
 

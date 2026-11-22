@@ -9,23 +9,24 @@
 为实验用户空间准备一个容易识别的标记。在**本次实验专用的 Buildroot 源码树**中执行下面两行，然后在 `menuconfig` 的 System configuration 中把 Root filesystem overlay directories 设为 `board/kernel-lab/overlay`。overlay 是要合并到根文件系统的一棵目录树，此处会在新系统中生成 `/etc/kernel-lab-id`。保存这个小目录和 defconfig，就能重建带同一标记的结果。
 
 ```bash
+# 在覆盖层中创建与目标 /etc 对应的目录。
 mkdir -p board/kernel-lab/overlay/etc
+# 加入一个可识别的标记，之后从新根目录内读取它来验证镜像。
 printf '%s\n' 'kernel-lab rootfs v1' > board/kernel-lab/overlay/etc/kernel-lab-id
 ```
 
-第一行建出覆盖层中的 `etc` 目录，第二行写入标记。构建时这个相对布局会合并到新根目录，启动或 chroot 后才从 `/etc/kernel-lab-id` 读取。
-
 ```bash
+# 选项和构建产物都放入同一个 O= 目录，后续命令要始终指向这里。
 make O="$HOME/br-rk-lab" menuconfig
 make O="$HOME/br-rk-lab"
+# 保存精简 defconfig，方便重建时恢复这次的选择。
 make O="$HOME/br-rk-lab" savedefconfig
+# 先核对 BusyBox 的目标架构，再列出生成归档的成员。
 file "$HOME/br-rk-lab/target/bin/busybox"
 tar -tf "$HOME/br-rk-lab/images/rootfs.tar" | head
+# 记录镜像摘要，用于与传输到目标机的那一份比对。
 sha256sum "$HOME/br-rk-lab/images/rootfs.tar"
 ```
-
-- 前 3 行共用同一输出目录，依次配置、构建并保存最小配置。
-- 第 4 行核对 BusyBox 架构，第 5 行只列归档内容，第 6 行计算归档摘要。上板时要传这一份归档。
 
 归档中的文件权限、符号链接与设备条目由镜像生成阶段处理。向板上传输 `images/rootfs.tar`，同时保存输出目录的 `defconfig`。`target/` 用于检查构建结果。
 
@@ -36,16 +37,17 @@ sha256sum "$HOME/br-rk-lab/images/rootfs.tar"
 在板上新建**空目录**，确保可用空间足够、所在文件系统允许执行程序，并确认 tar 文件已经传到当前目录。以下步骤需要板上的 root 权限。BusyBox 的 `echo` 可以在无需挂载 proc、sysfs 或 devtmpfs 的情况下验证架构与加载器。
 
 ```bash
+# 建一个空目录承接解包，失败即停止。
 labroot=$(mktemp -d) || exit 1
+# 保留权限解开归档，成功后才在新根内调用 BusyBox。
 sudo tar -xpf rootfs.tar -C "$labroot" &&
 sudo chroot "$labroot" /bin/busybox echo 'Buildroot userspace ready'
+# 读取覆盖层写入的标记，确认命令确实看到新文件树。
 sudo chroot "$labroot" /bin/busybox cat /etc/kernel-lab-id
+# 分别从原用户空间和 chroot 读内核版本；改变根目录仍共用同一个运行内核。
 uname -r
 sudo chroot "$labroot" /bin/busybox uname -r
 ```
-
-- 第 1 行创建空目录；第 2–3 行在解包成功后才运行新 BusyBox。
-- 第 4 行从新根内核对标记。末两行分别从旧用户空间和新目录运行 `uname`，两者仍向同一内核查询。
 
 预期两次内核 release 一致。`chroot` 改变进程查找文件的根目录，仍在使用已启动的内核。如果 BusyBox 明明存在却报找不到文件，在 WSL 用 `readelf -l` 检查解释器路径，再看目标归档中对应加载器是否存在。若报执行格式错误，核对 ELF 机器类型。
 

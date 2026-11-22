@@ -23,11 +23,14 @@ RK3576 集成 4 个 Cortex-A72 与 4 个 Cortex-A53；从[厂商产品页](https
 一个 `cpufreq policy` 描述由同一个调频策略管理的一组 CPU。先列出本板在线 CPU，再读策略与核心的关系。脚本只取已有节点，缺失字段保留为未知。
 
 ```bash
+# 先记录在线 CPU。下面逐个读取 cpufreq 策略，每个策略可能管理多个核。
 cat /sys/devices/system/cpu/online
 for p in /sys/devices/system/cpu/cpufreq/policy*; do
+    # 跳过缺少 related_cpus 的条目；接下来的输出把策略名和它管理的 CPU 集合配对。
     [ -r "$p/related_cpus" ] || continue
     printf '%s manages ' "${p##*/}"
     cat "$p/related_cpus"
+    # 若可读，再附上该策略使用的调频驱动。
     [ ! -r "$p/scaling_driver" ] || cat "$p/scaling_driver"
 done
 ```

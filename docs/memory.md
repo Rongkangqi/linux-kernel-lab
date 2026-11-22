@@ -50,7 +50,9 @@ RSS 是当前驻留在内存中的映射页总量。PSS 把每张物理页按映
 在板上先核对页大小，再观察自己的 shell 能提供哪些统计。随后在 L04 的程序暂停期间，把 `$$` 换为目标进程 PID，核对其 `smaps` 中对应起止地址的映射段。整个进程的汇总还包含栈、库及运行时分配。
 
 ```bash
+# 以本机设置为准记录基础页大小，单位是字节。
 getconf PAGESIZE
+# 用当前 shell 的 PID 取进程汇总。Rss 看驻留，Pss 分摊共享，Private_Dirty 看私有脏页。
 grep -E '^(Rss|Pss|Private_Dirty):' "/proc/$$/smaps_rollup"
 ```
 

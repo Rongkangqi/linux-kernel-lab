@@ -23,9 +23,12 @@
 先确认在线列表包含 1，自己进程的允许列表也包含 1，且板上 `taskset` 支持 `-c`。将下面几行放在同一终端执行。后台任务会在 10 秒后自行结束。
 
 ```sh
+# 在 CPU 1 在线且当前任务允许使用时，将一个短时后台任务的亲和性限制到该 CPU。
 taskset -c 1 sleep 10 &
+# 保存刚启动的任务号，在它退出前查允许的 CPU 列表。
 p=$!
 grep -E '^(Name|Pid|Cpus_allowed_list):' "/proc/$p/status"
+# 等本次后台任务结束。Cpus_allowed_list 表示允许运行的范围。
 wait "$p"
 ```
 

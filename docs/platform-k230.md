@@ -19,8 +19,10 @@ hart 是 RISC-V 软件可见的硬件执行线程。在所用 SDK 找启动入�
 在 Linux 控制台执行下列命令。第二条只挑选 CPU 标识行，不同 BSP 导出的字段可能有差异。最后一条读设备树导出的节点名，在没有导出的系统上改读与镜像匹配的 DTB。
 
 ```sh
+# 先取 Linux 的在线 CPU 列表，再比较 cpuinfo 导出的处理器、hart 和 ISA 字段。
 cat /sys/devices/system/cpu/online
 grep -E '^(processor|hart|isa)[[:space:]]*:' /proc/cpuinfo
+# 列出设备树中的 CPU 节点，和 Linux 实际在线集合分别记录。
 ls -d /sys/firmware/devicetree/base/cpus/cpu@*
 ```
 

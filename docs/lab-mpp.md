@@ -11,23 +11,23 @@
 下面以一帧 H.264 解码作为起点。如果 WSL 的 FFmpeg 提供 libx264，可在新的空目录生成自己的测试输入，降低多帧重排和外部素材带来的干扰。把 `one.h264` 复制到板上的实验目录，用同一个 SHA-256 确认两端输入相同。也可以使用板厂提供并已验证的小码流，按它的实际编码格式选参数。
 
 ```bash
+# 生成 320×240 的测试画面，只编码一帧，指定像素格式并输出裸 H.264 码流。
 ffmpeg -hide_banner -f lavfi -i testsrc2=size=320x240:rate=1 \
   -frames:v 1 -c:v libx264 -pix_fmt yuv420p -f h264 one.h264
+# 记录输入指纹，确保主机和板上两次解码用的是同一文件。
 sha256sum one.h264
 ```
-
-- 第一条的 `testsrc2` 产生已知尺寸的画面，`-frames:v 1` 限为一帧，`libx264` 和 `-f h264` 选编码器与裸码流格式。
-- 第二条记录摘要，传板后再次计算以核实输入一致。
 
 在板端运行 `command -v mpi_dec_test` 并查阅该测试程序的帮助（上游版本可不带参数运行）。当帮助明确列出 `-i` 为码流、`-t 7` 为 AVC/H.264、`-n 1` 为至多一帧时，使用下面的 Bash 示例。先查看 `baseline.log` 确认解码器成功输出一帧，只有初始化、格式变化或 EOS 提示都不足以证明输出了一帧。各 BSP 的日志文字和设备名会变化。[上游参数实现](https://github.com/rockchip-linux/mpp/blob/develop/utils/mpi_dec_utils.c) · [编码类型枚举](https://github.com/rockchip-linux/mpp/blob/develop/inc/rk_type.h)
 
 ```bash
+# 用 Bash 数组把每个参数单独保存，跟踪组和基线组复用同一命令。
 decode=(mpi_dec_test -i one.h264 -t 7 -n 1)
+# 先做一次基线解码，把标准输出和错误同时保存。
 "${decode[@]}" >baseline.log 2>&1
+# 核对解码结果与错误，再解释下一组的系统调用。
 cat baseline.log
 ```
-
-第 1 行在 Bash 数组中保存完整命令和参数，第 2 行展开数组运行并把标准输出和错误合写日志，第 3 行读回结果。先核对确有一帧输出，再录制跟踪。
 
 ## 第一步：从用户边界找入口
 
@@ -36,12 +36,12 @@ cat baseline.log
 将一次 API 操作关联到 fd 与 ioctl 编号，回到匹配版本的头文件解释参数结构。参数可能包含缓冲区句柄而非 CPU 地址。
 
 ```bash
+# 跟踪各线程与设备节点交互，保留 fd 路径和耗时。解码输出与 trace 分开保存。
 strace -f -yy -tt -T -e trace=openat,ioctl,poll,ppoll,read,write \
   -o one.trace "${decode[@]}" >traced.log 2>&1
+# 先筛设备路径和 ioctl，输出前 40 行用于定位，再回到完整 trace 看上下文。
 grep -E '/dev/|ioctl\(' one.trace | head -n 40
 ```
-
-前两行组成一条命令。`-f` 跟线程，`-yy` 帮助识别 fd，`-o` 单独保存系统调用，测试程序输出仍进 `traced.log`。末行先筛出设备和 ioctl 样本；后续还要在完整日志里配对同一个 fd 与请求。
 
 同一终端复用刚定义的 `decode` 数组。`-f` 跟踪子线程，`-yy` 尽可能把 fd 与其对象关联。旧版 strace 不支持 `-yy` 时去掉这个选项，从打开设备返回的 fd 顺查到后续 ioctl。若只有 `ENOENT` 或 `EACCES`，先查镜像中的设备与访问权限，保存错误行；在正常样例成立前不要给 IRQ 或耗时作归因。
 

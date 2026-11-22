@@ -13,11 +13,15 @@
 `sysfs` 是内核向用户空间展示设备和驱动关系的文件系统。下面从已绑定的平台设备中选出有设备树节点的第一个。它只读取链接和字符串，适合不同板卡和不同地址布局。
 
 ```bash
+# 遍历 platform 总线上的设备，筛出既绑定了驱动又提供设备树 compatible 的一个实例。
 for d in /sys/bus/platform/devices/*; do
     [ -L "$d/driver" ] && [ -r "$d/of_node/compatible" ] || continue
+    # 取设备目录名、驱动链接末级名称，配成一条实际的设备绑定记录。
     printf 'device=%s\n' "${d##*/}"
     printf 'driver=%s\n' "$(basename "$(readlink "$d/driver")")"
+    # 一个 compatible 属性可能包含多个以空字符分隔的名字，转成多行后再与驱动匹配表比较。
     tr '\000' '\n' < "$d/of_node/compatible"
+    # 只研究第一个符合条件的设备，在这一步结束遍历。
     break
 done
 ```

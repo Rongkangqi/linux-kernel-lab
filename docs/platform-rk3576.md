@@ -18,13 +18,16 @@ RK3576 是本路线的主力实机平台。它把 ARM CPU 核与内存、互连�
 在 RK3576 终端读运行中的设备树，再对照 Linux 启用的 CPU。设备树的 `compatible` 是一个可以含多个字符串的属性，各字符串以空字节结尾；`tr` 用空格把它们分开。读不到目录时，先检查镜像是否导出了设备树，再用该镜像对应的 DTB 离线查看。
 
 ```sh
+# 从运行内核的设备树枚举 CPU 节点，每个节点只读取实际可访问的 compatible。
 tree=/sys/firmware/devicetree/base
 for cpu in "$tree"/cpus/cpu@*; do
     [ -r "$cpu/compatible" ] || continue
+    # 先打印节点名，再把以空字符分隔的兼容串放在同一行。
     printf '%s ' "${cpu##*/}"
     tr '\000' ' ' < "$cpu/compatible"
     printf '\n'
 done
+# 再取在线逻辑 CPU 集合，与设备树描述的硬件分开记录。
 cat /sys/devices/system/cpu/online
 ```
 
@@ -52,7 +55,9 @@ cat /sys/devices/system/cpu/online
 先在自己的 BSP 中列出相关文件：
 
 ```bash
+# 列出当前提交实际跟踪的 RK3576 文件，先确定这棵源码树包含哪些板型。
 git ls-files '*rk3576*'
+# 按 SoC 和 CPU 兼容串找到候选节点，再沿具体板级 DTS 的 include 关系阅读。
 rg -n 'rockchip,rk3576|arm,cortex-a72|arm,cortex-a53' arch/arm64/boot/dts
 ```
 

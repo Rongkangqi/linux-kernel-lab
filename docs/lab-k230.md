@@ -15,15 +15,15 @@
 取得启动日志，标注第一条可见固件信息、Linux 启动、内存范围与控制台。确认当前登录的是 Linux 后运行以下只读命令。固件可关闭日志，未看到 banner 时改用镜像规则作旁证。
 
 ```sh
+# 先记下当前 Linux 构建，再区分在线逻辑 CPU 与芯片上其他执行环境。
 uname -a
 cat /sys/devices/system/cpu/online
+# 从 Linux 侧读取可见 CPU 与内存资源，留作和固件配置对应的证据。
 cat /proc/cpuinfo
 cat /proc/iomem
+# 设备树的 compatible 用空字符分隔，逐行打印便于核对板型。
 tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
 ```
-
-- 第 1 行认出当前内核，第 2 行取得其在线逻辑 CPU 集合。
-- 第 3 行读该系统提供的 CPU 信息，第 4 行核对内存资源，第 5 行把 DT 的兼容字符串分行。把它们和本镜像的固件、构建目标对应起来，不能仅靠在线编号推算另一侧固件状态。
 
 若系统未导出设备树，从镜像对应的 DTB 入手，同时注明 bootloader 可能修订过设备树。`cpu/online` 记录 Linux 当前调度得到的逻辑 CPU；hart ID、Linux CPU 编号与开发板串口号分别保留。
 
@@ -36,12 +36,11 @@ tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
 在经典 SDK 仓库根目录执行这两行搜索。第一条找固件构建目标和它们要装载的 `FW_PAYLOAD_PATH`。第二条从本次 `.config` 核实有条件的分支。若还没有该文件，先读所选板型 defconfig，把结果标记为配置预期。
 
 ```sh
+# 在 SDK 中定位两个 OpenSBI 目标，并找出各自打包的 payload。
 grep -nE '^(little-core-opensbi|big-core-opensbi):|FW_PAYLOAD_PATH=' Makefile
+# 用这次构建的配置判断启用了哪些系统，再与 Makefile 的可选路径对照。
 grep -E '^CONFIG_SUPPORT_(LINUX|RTSMART)=' .config
 ```
-
-- 第一行在构建规则中找两侧 OpenSBI 目标和 payload 路径，`-n` 保留可回查的位置。
-- 第二行从这次构建的配置判断启用了哪些系统。前者列出配方，后者帮助选出本镜像实际采用的分支。
 
 以经典 Makefile 为例，`little-core-opensbi` 配方的 payload 指向 `arch/riscv/boot/Image`，`big-core-opensbi` 的相应配方使用 `rtthread.bin`。payload 是固件装载或跳转的下一阶段程序。记录时把目标名、文件路径、启用条件写在同一行，再检查实际打包产物。SDK 内的搜索会同时命中未选中的配方，需对照启用条件逐个筛选。
 

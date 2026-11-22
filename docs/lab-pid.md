@@ -11,57 +11,63 @@
 在自己的实验目录新建 `pid_threads.c`，保存下面的完整观察程序。它会保留约 30 秒，便于另一个终端查看。
 
 ```c
+/* 先开启 GNU 扩展，使 glibc 声明 gettid。 */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h>  /* strerror 用来解释 pthread 返回的错误码。 */
 #include <unistd.h>
-#include <pthread.h>
+#include <pthread.h>  /* 创建线程、等待线程和 pthread_t 的声明。 */
 
+/* 新线程从 worker 开始。arg 是创建者传进来的标签，便于把输出行对回线程。 */
 static void *worker(void *arg)
 {
     const char *name = arg;
+    /* getpid() 在同一线程组返回相同编号；gettid() 标识当前内核线程。转 long 以匹配 %ld。 */
     printf("%s: pid=%ld tid=%ld\n", name,
            (long)getpid(), (long)gettid());
-    sleep(30);
-    return NULL;
+    sleep(30);  /* 保留 30 秒的观察窗口，便于另一终端读取 /proc。 */
+    return NULL;  /* 只结束这个工作线程。 */
 }
 
 int main(void)
 {
+    /* a、b 是 pthread 的线程句柄，稍后传给 pthread_join。 */
     pthread_t a, b;
-    setbuf(stdout, NULL);
+    setbuf(stdout, NULL);  /* 立即显示每个线程的输出。 */
+    /* 主线程先打印一行作基线：组长的 TID 与线程组 ID 相同。 */
     printf("main: pid=%ld tid=%ld\n",
            (long)getpid(), (long)gettid());
+    /* 创建第一个线程，运行 worker 并传入标签。pthread_create 成功时返回 0。 */
     int rc = pthread_create(&a, NULL, worker, "worker-a");
-    if (rc != 0) { fprintf(stderr, "%s\n", strerror(rc)); return 1; }
+    if (rc != 0) { fprintf(stderr, "%s\n", strerror(rc)); return 1; }  /* 失败时用返回码 rc 查错误说明。 */
+    /* 创建第二个线程。两个 worker 的实际打印先后由调度决定。 */
     rc = pthread_create(&b, NULL, worker, "worker-b");
     if (rc != 0) {
         fprintf(stderr, "%s\n", strerror(rc));
-        pthread_join(a, NULL);
+        pthread_join(a, NULL);  /* 创建 b 失败时，a 仍在运行，需要等它结束。 */
         return 1;
     }
+    /* 正常路径等待两个线程都结束。采样应在它们的 /proc 条目还存在时进行。 */
     pthread_join(a, NULL);
     pthread_join(b, NULL);
     return 0;
 }
 ```
 
-- **沿程序找三种标识。** 第 1–6 行让编译器看到 `gettid`、标准 I/O 和 pthread 接口的声明。
-- 第 8–14 行是新线程的入口：`arg` 带入标签，`getpid()` 取得组号，`gettid()` 取得当前线程号，强制转成 `long` 匹配 `%ld`。`sleep(30)` 留出观察时间，`return NULL` 结束这个 worker。
-- 第 19–22 行声明两个 pthread 句柄，关闭输出缓冲，由 main 先打印自己的两个编号。
-- 第 23–30 行创建 a、b；第二次若失败，仍要等待已创建的 a。
-- 第 31–33 行分别 join 后 main 才退出，所以读 `/proc` 的时机在两个 worker 存活期间。
-
 ```bash
 # 板上或 WSL 本机编译时执行；已有对应架构的可执行文件时跳过这行
 cc -Wall -Wextra -g -O0 -pthread pid_threads.c -o pid_threads
+# 在后台启动，再立即把后台任务的 PID 存进 pid，供下面各次查询使用。
 ./pid_threads &
 pid=$!
 # 等程序打印三个线程标识，再采样；下面的短暂停顿方便手工观察。
 sleep 1
+# -L 让 ps 每个线程列一行。比较这三行的 PID、TID 和调度状态。
 ps -L -p "$pid" -o pid,tid,stat,comm
+# task 子目录的名字就是该线程组中仍存活的各个 TID。
 ls "/proc/$pid/task"
+# 组长的 status 给出线程组信息，下面再沿不同 TID 分别读取各线程自己的 status。
 grep -E '^(Name|State|Tgid|Pid|Threads):' "/proc/$pid/status"
 
 # 在线程退出前，分别读取组长和两个 worker 的记录
@@ -69,14 +75,9 @@ for status in "/proc/$pid/task/"*/status; do
     printf '\n%s\n' "$status"
     grep -E '^(Tgid|Pid|Threads):' "$status"
 done
+# 等本终端启动的后台进程结束。
 wait "$pid"
 ```
-
-- **把 shell 输出对回 C 程序。** 第 2 行用 `-pthread` 编译。
-- 第 3–4 行后台启动程序并立刻保存 `$!`，它标识刚才的进程。
-- 第 6 行给线程创建留一点时间，第 7 行用 `-L` 每个线程列一行，第 8 行列出同一组下的 TID。
-- 第 9 行先读组长，第 12–15 行再逐个读各线程的 status。
-- 最后 `wait "$pid"` 让 shell 等待这个后台进程，与 C 中等待特定线程的 `pthread_join` 分属两层。
 
 `&` 让程序在后台运行，紧接着的 `$!` 取得这次启动的后台进程号。进程结束后，相应的 `/proc` 目录就会消失。把整段命令放在同一个终端执行，或把这个 PID 记下来，在另一个终端观察。如果精简板载系统的 `ps` 缺少 `-L` 选项，仍可用上面的 `/proc` 循环读出每个线程的标识。
 

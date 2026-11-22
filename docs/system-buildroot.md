@@ -28,13 +28,16 @@ Buildroot 可以构建工具链、根文件系统，并按配置构建内核和�
 根文件系统（rootfs）保存 `/sbin/init`、库和命令等文件。引导程序把内核、硬件描述和启动参数交给 Linux；Linux 建立设备并找到根文件系统，再启动第一个用户进程。使用 initramfs 的系统可能先执行早期用户空间的 `/init`，再切换到最终的根。进入工作镜像后，用以下只读命令找出这几个环节在本机留下的证据。
 
 ```sh
+# 在启动参数中找根设备或早期用户空间的线索。
 cat /proc/cmdline
+# 只选择挂载点为 / 的记录，打印来源与文件系统类型。
 awk '$2 == "/" {print $1, $3}' /proc/mounts
+# 读取 PID 1 当前执行文件的路径，再用 uname 记下与它配合运行的内核。
 readlink /proc/1/exe
 uname -r
 ```
 
-第一行找 `root=` 或与 initramfs 有关的参数，第二行读当前挂载到 `/` 的来源和文件系统类型，第三行看现在的 PID 1 指向什么，第四行记录内核 release。例如 `/` 来自一个 ext4 分区而 PID 1 指向 systemd，说明当前用户空间用了那个文件系统和 init；它们无法单独确定之前是否经过了 initramfs。
+用 `/proc/cmdline` 找 `root=` 或与 initramfs 有关的参数，用 `awk` 读当前挂载到 `/` 的来源和文件系统类型，用 `readlink` 看现在的 PID 1 指向什么，用 `uname` 记录内核 release。例如 `/` 来自一个 ext4 分区而 PID 1 指向 systemd，说明当前用户空间用了那个文件系统和 init；它们无法单独确定之前是否经过了 initramfs。
 
 **把 BusyBox 放进新目录并 chroot 成功，为什么仍会看到旧内核版本？** `chroot` 改变所选进程路径查找的根。它继续向同一个正在运行的内核发系统调用，所以 `uname` 结果可以完全相同。
 

@@ -15,6 +15,7 @@ WSL 的运行内核、虚拟硬件、模块和 trace 功能与开发板不同。
 ## 架构必须实际检查
 
 ```bash
+# uname 报告运行内核的机器架构，file -L 检查当前用户空间 shell 的 ELF 架构。
 uname -m
 file -L /bin/sh
 ```
@@ -26,8 +27,10 @@ WSL 的架构取决于宿主环境。x86_64 WSL 可以交叉编译 AArch64，也
 运行 `pwd` 看当前目录，再执行下面的只读命令。第一组分清系统层次；第二组查文件落在哪个挂载点。读 `df` 时找 `Type` 和 `Mounted on` 两列。
 
 ```bash
+# 把发行版名称和 WSL 所用 Linux 内核版本分别记录。
 grep '^PRETTY_NAME=' /etc/os-release
 uname -r
+# df -T 显示主目录所在文件系统的类型，再和已挂载的 Windows 盘对照。
 df -T "$HOME"
 test ! -d /mnt/c || df -T /mnt/c
 ```

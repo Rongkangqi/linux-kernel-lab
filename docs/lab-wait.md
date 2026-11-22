@@ -25,47 +25,47 @@
 ## 终端 A：创建命名管道并启动读者
 
 ```bash
+# 两端都在这个目录运行，确保相对路径 lab.fifo 指向同一个命名管道。
 mkdir -p ~/kernel-lab/experiments/wait
 cd ~/kernel-lab/experiments/wait
 # 若已存在 lab.fifo，先确认它是上次实验的 FIFO；不要覆盖其他文件
 test -p lab.fifo || mkfifo lab.fifo || exit 1
+# -tt 记调用时刻，-T 记耗时；读者的跟踪单独存入 reader.trace。
 strace -tt -T -o reader.trace python3 -c '
 import os
+# 第一次可能睡眠的位置：只读阻塞打开会等到一个写端也打开。
 fd = os.open("lab.fifo", os.O_RDONLY)
+# 能看到 PID 就说明 open 已返回。flush 让这行可以马上用于 ps 采样。
 print("opened, reader PID =", os.getpid(), flush=True)
+# 第二次可能睡眠的位置：写端已打开、缓冲区为空，等写入后最多取 32 字节。
 data = os.read(fd, 32)
+# repr 会把收到的换行显示出来，便于和 trace 中的返回长度核对。
 print("read returned:", repr(data), flush=True)
 os.close(fd)
 '
 ```
-
-- **终端 A 怎样读。** 第 1–4 行进入实验目录并确认入口是 FIFO。`test -p` 成功便跳过 `mkfifo`，创建失败则停止。
-- 第 5–7 行由 strace 启动 Python，把跟踪写进 `reader.trace`；`os.open` 要等到有写端打开才能把 fd 赋给变量。
-- 第 8 行在打开成功后才打印，`flush=True` 让你立刻看见。
-- 第 9 行请求至多 32 字节，这里才可能发生第二次等待。
-- 第 10 行用 `repr` 显示字节和换行，第 11 行释放读端。
 
 此时可能先阻塞在 FIFO 的 `openat`，尚未到 read。这个细节必须在 trace 中区分。
 
 ## 终端 B：打开写端，延迟发送
 
 ```bash
+# 与读者进入同一个实验目录。
 cd ~/kernel-lab/experiments/wait
 python3 -c '
 import os, time
+# 阻塞打开写端。返回时读写两端已配对，读者可以进入 read。
 fd = os.open("lab.fifo", os.O_WRONLY)
 print("writer opened; waiting 8 seconds", flush=True)
+# 保持写端打开但不送数据，让读者的 read 出现约 8 秒的等待。
 time.sleep(8)
+# 五个字母加一个换行，一共送入 6 字节。
 os.write(fd, b"hello\n")
+# 保持写端再开两秒。读者若尝试再读，需要等最后一个写端关闭才能读到 EOF。
 time.sleep(2)
 os.close(fd)
 '
 ```
-
-- **终端 B 怎样读。** 第 1–4 行要求 A、B 在同一目录打开同一个 FIFO；写端打开后，A 的第一次等待可以结束。
-- 第 5–6 行打印并暂停 8 秒，期间 B 保持 fd 打开。
-- 第 7 行写入五个字母和一个换行，足以让 A 的 `read` 返回 6。
-- 第 8–9 行再等两秒才关闭，这段时间只在 A 尝试再次读取时才影响它。
 
 在 8 秒窗口内，第三个终端运行 `ps -p PID -o pid,stat,wchan,comm`，把 PID 换成 A 刚打印的数字。`wchan` 受权限、符号和配置影响，不保证显示固定名称。若提示缺少 `strace`，见[基础工具安装](environment.md)；也可先用 `python3 -c` 直接运行同一读者，保留 Python 输出作为第一份观察。
 
@@ -105,16 +105,24 @@ os.close(fd)
 ```bash
 python3 - <<'PY'
 import os
+# 先取得非阻塞读端，没有写者也能成功打开。
 r = os.open("lab.fifo", os.O_RDONLY | os.O_NONBLOCK)
+# 现在已有读者，非阻塞写端能成功打开。
 w = os.open("lab.fifo", os.O_WRONLY | os.O_NONBLOCK)
 try:
+    # 第一次读：缓冲区空，w 仍开着。read 报 EAGAIN，跳到 except，外层 print 不执行。
     print(os.read(r, 32))
 except BlockingIOError as e:
+    # 打印异常中的错误号；两个描述符仍可继续使用。
     print("writer open, no data:", e.errno)
+# 写入一个字节，随后关掉唯一写端。关闭不会丢弃排队的 X。
 os.write(w, b"X")
 os.close(w)
+# 第二次读：虽然 w 已关闭，仍读到 X。这次读取把缓冲区清空。
 print("writer closed, buffered:", os.read(r, 32))
+# 第三次读：缓冲区空且没有写端，得到零字节，即 b''。
 print("writer closed, drained:", os.read(r, 32))
+# 最后释放读端；目录中的 FIFO 名称仍在。
 os.close(r)
 PY
 ```
@@ -154,18 +162,23 @@ writer closed, drained: b''
 **① 写端先启动，谁会等在打开这一步？** 先在终端 B 运行第一段，隔几秒后在终端 A 运行第二段。两个终端都要在同一个实验目录。
 
 ```bash
+# 先在 B 启动，只跟踪 openat，观察它什么时候返回。
 strace -tt -T -e trace=openat -o writer-open.trace python3 -c '
 import os
+# 读端尚未出现，阻塞在这里。只有打开成功后才能打印提示。
 w = os.open("lab.fifo", os.O_WRONLY)
 print("writer opened")
 os.close(w)
 '
+# 从 Python 启动时的许多打开操作中筛出这条 FIFO。
 grep '"lab.fifo"' writer-open.trace
 ```
 
 ```bash
+# 隔几秒再在 A 启动这段。
 python3 -c '
 import os
+# 与 B 等待中的写端配对，双方都能完成打开；本组无需读写字节。
 r = os.open("lab.fifo", os.O_RDONLY)
 print("reader opened")
 os.close(r)
@@ -177,17 +190,23 @@ B 的 `os.open` 使用阻塞模式，读端尚未打开时，下一行没有机�
 **② 一个 fd 同时持有两端，阻塞会移到哪一步？** 在 Linux 上运行下面一段。为让实验自行结束，安排一个线程稍后送来字节。
 
 ```bash
+# -f 跟踪稍后启动的线程，-yy 给 fd 标出路径，便于配对开始和恢复的调用。
 strace -f -tt -T -yy -e trace=openat,read,write -o rdwr.trace python3 - <<'PY'
 import os
 from threading import Timer
+# Linux 允许一个 fd 同时持有读写两端，当前没有其他写者也能打开。
 fd = os.open("lab.fifo", os.O_RDWR)
 print("opened", flush=True)
+# 安排另一个线程半秒后写一个字节。构造 Timer 后还需 start 才会开始计时。
 wake = Timer(0.5, os.write, args=(fd, b"R"))
 wake.start()
+# fd 是阻塞模式，缓冲区空时在这里等；定时线程写入后，得到 R。
 print(os.read(fd, 32))
+# 等定时线程完成，再关闭共享的 fd。
 wake.join()
 os.close(fd)
 PY
+# 同时保留带 FIFO 路径的行和恢复的 read 行，后者可能没有路径。
 grep -E 'lab\.fifo|<\.\.\. read resumed>' rdwr.trace
 ```
 
@@ -198,11 +217,14 @@ grep -E 'lab\.fifo|<\.\.\. read resumed>' rdwr.trace
 ```bash
 python3 - <<'PY'
 import errno, os
+# 先开非阻塞读端，让下一行能取得写端。
 r = os.open("lab.fifo", os.O_RDONLY | os.O_NONBLOCK)
 w = os.open("lab.fifo", os.O_WRONLY)
+# 关掉唯一读者，再尝试写入，保证 write 碰到的确实是无读者状态。
 os.close(r)
 try:
     os.write(w, b"X")
+# Python 默认忽略 SIGPIPE。这里捕获写入失败并打印符号名 EPIPE。
 except BrokenPipeError as e:
     print(errno.errorcode[e.errno])
 os.close(w)
@@ -216,15 +238,21 @@ PY
 ```bash
 python3 - <<'PY'
 import fcntl, os
+# 保留一个读者以便写端打开，但整个实验都不从 r 取数据。
 r = os.open("lab.fifo", os.O_RDONLY | os.O_NONBLOCK)
+# 写端也设非阻塞，这样写不下时程序能转到异常处理并报告结果。
 w = os.open("lab.fifo", os.O_WRONLY | os.O_NONBLOCK)
+# 向内核查询这个 FIFO 的容量，单位为字节。
 capacity = fcntl.fcntl(w, fcntl.F_GETPIPE_SZ)
 total = 0
 while True:
     try:
+        # 一次写 1024 字节，把成功返回的字节数加进 total。
         total += os.write(w, b"x" * 1024)
+    # 空间不足以容纳这个小块时得到 EAGAIN，停止循环。
     except BlockingIOError:
         break
+# 并排比较本次查询容量和实写字节数，再释放两个端点。
 print("capacity =", capacity, "bytes; written =", total, "bytes")
 os.close(w)
 os.close(r)

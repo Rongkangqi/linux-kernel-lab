@@ -45,9 +45,12 @@ Linux 中每个线程对应一个 `task_struct`。同一线程组的线程在常
 在板上开一个终端，运行下面的命令。`$!` 是刚启动的后台任务 PID。读 `status` 时，`sleep` 通常已经处于 `S`（可中断睡眠），`voluntary_ctxt_switches` 记录任务自愿交出 CPU 的累计次数。一次采样也可能撞上启动窗口，重复运行核对。
 
 ```bash
+# 后台启动一个暂时休眠的进程，立即保存它的 PID。
 sleep 4 & sleeper=$!
+# 让子进程先进入 sleep，再从 /proc 取一次状态快照。
 sleep 1
 grep -E '^(Name|State|voluntary_ctxt_switches):' "/proc/$sleeper/status"
+# 回收这个后台任务。它退出后，相应的 /proc 条目会消失。
 wait "$sleeper"
 ```
 

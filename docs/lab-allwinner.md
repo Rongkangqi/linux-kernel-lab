@@ -13,28 +13,27 @@
 在可写目录内，终端 A 保存三个计数表。第一个十秒窗口保持空闲，第二个窗口用终端 B 执行外设操作，或在板上按键。每次保存时同时记下操作是否成功。
 
 ```sh
+# 先保存起点，接下来十秒保持设备空闲，测出背景中断增长量。
 cat /proc/interrupts > irq-before.txt
 sleep 10
+# 这份快照既结束空闲窗口，也开始活动窗口。
 cat /proc/interrupts > irq-idle.txt
+# 在这个十秒窗口用另一终端触发目标外设，再记录同一个 IRQ、CPU 列的计数。
 sleep 10
 cat /proc/interrupts > irq-active.txt
 ```
-
-- 第 1 行留起点快照，第 2 行在空闲条件下等 10 秒，第 3 行是空闲窗口终点，也是活动窗口起点。
-- 第 4 行等待期间在另一端产生输入；第 5 行保存终点。对同一 IRQ、同一 CPU 列分别做两次差值。
 
 只挑与外设驱动相关的一行，分别计算每个 CPU 在两个窗口中的差值。根据驱动绑定、设备树的中断父节点、驱动请求 IRQ 的位置和表中名称核实身份。设备树里的硬件中断描述和 Linux 分配的 IRQ 号可能不同。如果活动窗口计数没有变化，先检查是否确有输入、驱动是否使用轮询、该外设是否属于实时核。
 
 若镜像提供 `trace-cmd`，并且权限和内核配置允许，先用 `trace-cmd list -e` 核对事件。下面的命令在测试板上记录一个十秒窗口，窗口内从另一终端触发同一个已知输入。
 
 ```sh
+# 同时记录中断处理的进入/退出、任务唤醒及切换。sleep 为本次采样限定十秒窗口。
 trace-cmd record -e irq:irq_handler_entry -e irq:irq_handler_exit \
   -e sched:sched_wakeup -e sched:sched_switch sleep 10
+# 将二进制采样转换成文本，按 IRQ、CPU、任务号和时间戳配对。
 trace-cmd report > active-trace.txt
 ```
-
-- 第一条命令中的两个 `irq` 事件标出处理函数入口与退出，两个 `sched` 事件标出唤醒和切换，`sleep 10` 限定录制时段。
-- 第二条把二进制记录转成文本，再按 IRQ、CPU 和 TID 配对。
 
 在报告中按 IRQ 号、任务 PID 和 CPU 筛出候选事件。查看驱动是直接唤醒读者，还是先将完成事件交给 IRQ 线程或工作队列。仅有相邻时间戳时，把连接暂列为假设，再查驱动的等待队列或完成回调。缺少跟踪能力的镜像可以先提交计数对照和源码路径，标注调度延迟尚未测出。[Linux 事件跟踪](https://docs.kernel.org/trace/events.html)
 

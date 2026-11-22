@@ -26,25 +26,32 @@ Shell 重点掌握管道、重定向、退出码、后台任务、`ps`、`/proc`
 在有 C 编译器的 Linux 终端新建一个空目录，保存下面的 `identity.c`。ELF 是 Linux 常用的可执行文件格式。编译器先把 C 源码变成目标文件，链接器再把程序和所需运行库的引用组合成可执行文件。
 
 ```c
+/* stdio 声明 printf、fflush；unistd 提供 getpid、sleep。 */
 #include <stdio.h>
 #include <unistd.h>
 
 int main(void)
 {
+    /* 记录当前程序的进程号，让另一终端能把这个程序和 /proc 中的条目配对。 */
     printf("PID=%ld\n", (long)getpid());
-    fflush(stdout);
-    sleep(20);
+    fflush(stdout);  /* 立即把 PID 送到标准输出。 */
+    sleep(20);  /* 让进程保持存活 20 秒，为观察 exe 符号链接留出时间。 */
     return 0;
 }
 ```
 
 ```bash
+# -c 只编译出可重定位目标，-g 保留调试信息。
 cc -Wall -Wextra -g -O0 -c identity.c -o identity.o
+# 链接目标文件，产生能启动的 ELF。
 cc identity.o -o identity
+# 先读目标文件的 Type 与 Machine，再和可执行文件比较；开启 PIE 时后者可显示 DYN。
 readelf -h identity.o | grep -E 'Type:|Machine:'
 readelf -h identity | grep -E 'Type:|Machine:'
+# 后台启动并立即保存 PID，趁目标仍活着观察它。
 ./identity & child=$!
 sleep 1
+# exe 链接指向正在执行的文件。wait 在观察完毕后回收后台任务。
 readlink "/proc/$child/exe"
 wait "$child"
 ```

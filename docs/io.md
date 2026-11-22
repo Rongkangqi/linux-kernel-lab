@@ -17,15 +17,19 @@
 在 Linux shell 中运行。`mktemp` 创建自己的临时文件，`dd` 每次从标准输入读一个字节。输出的三个字符之间没有换行，最后的 `printf` 统一换行。
 
 ```bash
+# 创建独立临时文件，写下每个位置都不同的五个字节，方便凭字母判断偏移。
 f=$(mktemp)
 printf 'ABCDE' > "$f"
+# fd 3 第一次打开文件。复制出的 fd 4 与 3 共享偏移；fd 5 再次打开，偏移独立。
 exec 3<"$f"
 exec 4<&3
 exec 5<"$f"
+# 三次各取一字节。3 取 A 并推进偏移，4 随后取 B，5 则从自己的开头取 A。
 dd bs=1 count=1 <&3 2>/dev/null
 dd bs=1 count=1 <&4 2>/dev/null
 dd bs=1 count=1 <&5 2>/dev/null
 printf '\n'
+# 关闭 shell 中的三个描述符，然后删除这次创建的临时文件。
 exec 3<&- 4<&- 5<&-
 rm "$f"
 ```

@@ -21,6 +21,7 @@
 | C | C11 `_Atomic` 与 `atomic_fetch_add` | 原子更新与多个字段一致性的差别 |
 
 ```c
+/* 请求 POSIX.1-2008 接口，让头文件暴露屏障相关声明。 */
 #define _XOPEN_SOURCE 700
 #include <pthread.h>
 #include <stdatomic.h>
@@ -28,56 +29,55 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* 两位工作线程都到达屏障之后，才允许任意一方写回 split。 */
 static pthread_barrier_t both_read;
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static atomic_int split, combined;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;  /* 两位线程使用同一把锁保护 protected。 */
+static atomic_int split, combined;  /* split 用分开的原子读、写；combined 用一次原子读改写。 */
 static int protected;
 
+/* pthread 接口直接返回错误码，因此用 strerror(rc) 解释该返回值。 */
 static void check(int rc) {
     if (rc) { fprintf(stderr, "%s\n", strerror(rc)); exit(1); }
 }
+/* 每个线程按相同顺序执行三种加一。三个计数器各自独立，初始值都为 0。 */
 static void *increment(void *unused) {
     (void)unused;
-    int old = atomic_load(&split);
+    int old = atomic_load(&split);  /* 两位线程各自保留旧值 0。 */
+    /* 先等双方读完。一个线程会收到 PTHREAD_BARRIER_SERIAL_THREAD，这也是成功返回。 */
     int rc = pthread_barrier_wait(&both_read);
     if (rc != PTHREAD_BARRIER_SERIAL_THREAD) check(rc);
-    atomic_store(&split, old + 1);
+    atomic_store(&split, old + 1);  /* 两次都写 0 + 1，最终 split 为 1。 */
+    /* 只有拿到锁的线程能改 protected。第二位进入时会看到第一位留下的 1。 */
     check(pthread_mutex_lock(&mutex));
     protected++;
     check(pthread_mutex_unlock(&mutex));
+    /* 将读取、加一、写回作为一次原子操作完成，两次加一都会保留。 */
     atomic_fetch_add(&combined, 1);
     return NULL;
 }
 int main(void) {
+    /* pthread_t 用来指定稍后等待哪个工作线程。 */
     pthread_t first, second;
-    check(pthread_barrier_init(&both_read, NULL, 2));
+    check(pthread_barrier_init(&both_read, NULL, 2));  /* 会合人数是两个工作线程，主线程不参与。 */
     check(pthread_create(&first, NULL, increment, NULL));
     check(pthread_create(&second, NULL, increment, NULL));
+    /* 两次 join 保证结果已写完再打印。预计依次得到 1、2、2。 */
     check(pthread_join(first, NULL));
     check(pthread_join(second, NULL));
     printf("split=%d mutex=%d fetch_add=%d\n",
            atomic_load(&split), protected, atomic_load(&combined));
+    /* 等所有使用者退出后才销毁屏障和锁。 */
     check(pthread_barrier_destroy(&both_read));
     check(pthread_mutex_destroy(&mutex));
 }
 ```
 
-- **按发生顺序读 `counter.c`。** 第 8–11 行准备会合点、互斥锁和三份独立计数。
-- 先从 main 的第 30–32 行看：会合人数设为 2，然后启动两个 `increment`。
-- 回到第 18 行，各线程把 `split` 的旧值保存进各自的 `old`。
-- 第 19–20 行让两者都读完再继续；其中一个线程收到 `PTHREAD_BARRIER_SERIAL_THREAD` 也算成功。
-- 第 21 行两次都写入各自算出的 1。
-- 第 22–24 行把整个 `protected++` 放在同一把锁内，第二个线程能看到第一次的结果。
-- 第 25 行 `atomic_fetch_add` 用一次不可分割的读改写更新第三份计数。
-- 第 33–38 行等两个线程退出、打印三份结果，最后销毁同步对象。
-
 ```bash
+# 用 C11 原子接口和 pthread 编译，同一个二进制含三种加一方式。
 cc -std=c11 -Wall -Wextra -O2 -pthread counter.c -o counter
+# 核对 split、mutex、fetch_add 三列，先解释哪一次更新被覆盖。
 ./counter
 ```
-
-- 第一行要求 C11 原子操作和 pthread 支持，并生成 `counter`。
-- 第二行运行同一个程序里的三组对照；预期依次得到 1、2、2。
 
 读结果前画出 A 的四步：两人都读到 0，分别算出 1，先后写回同一个 1。预期 `split=1 mutex=2 fetch_add=2`。即使在单 CPU 上，线程也可以先后到达屏障。B 的锁覆盖读取到写回的全过程，C 把整个加一合为一次原子读改写。如果改成两个线程对普通共享整数同时执行 `counter++`，C 语言将其定义为数据竞争，程序行为未定义；不要用那种写法的偶然输出估算丢失比例。
 

@@ -23,9 +23,12 @@ QEMU virt 的设备、地址、中断与时钟不等于 Rockchip SoC。所选 CP
 设备树（DT）是传给内核的硬件描述。QEMU 的 `virt` 可以把这份描述写成二进制 DTB。下面在新的实验目录操作，需要 `qemu-system-aarch64` 和 `dtc`（Ubuntu 的 `device-tree-compiler` 包）。
 
 ```bash
+# 用独立目录保存这次虚拟机配置对应的设备树。
 mkdir -p ~/kernel-lab/experiments/virt-dt
 cd ~/kernel-lab/experiments/virt-dt
+# 让 QEMU 导出两颗虚拟 CPU 的 DTB。-smp 2 是后面核对的输入条件。
 qemu-system-aarch64 -machine virt,dumpdtb=two.dtb -cpu cortex-a57 -smp 2 -m 512 -nographic
+# 把二进制 DTB 转为 DTS 文本，再查 CPU 节点和 device_type。
 dtc -I dtb -O dts -o two.dts two.dtb
 grep -nE 'cpu@|device_type = "cpu"' two.dts
 ```

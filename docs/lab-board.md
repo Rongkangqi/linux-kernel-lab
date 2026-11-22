@@ -5,18 +5,17 @@
 ## 建立基本档案
 
 ```bash
+# 保存发行版和正在运行的内核版本，再看本内核报告的 CPU 信息。
 cat /etc/os-release
 uname -a
 cat /proc/cpuinfo
+# model 是板名，compatible 是匹配字符串列表。把设备树的空字符换行再读。
 tr '\000' '\n' < /sys/firmware/devicetree/base/model
 tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
+# 记录各 CPU 的 IRQ 计数以及内核公布的物理资源范围，权限可能限制地址显示。
 cat /proc/interrupts
 cat /proc/iomem
 ```
-
-- 前 3 行依次记录用户发行版、运行内核和 CPU 报告。
-- 第 4–5 行用 `tr` 把设备树字符串末尾的空字节换成换行，分别核对板名与兼容列表。
-- 第 6 行读每 CPU 的 IRQ 计数，第 7 行查内核公开的物理资源区间；权限可能限制地址显示。
 
 有的文件受权限或内核配置限制；记录“不可读/未提供”，不要把空输出当硬件不存在。`/proc/iomem` 地址也可能被隐藏。日志使用 `dmesg` 或板上可用的 journal 接口，必要时通过 sudo 只读获取。
 
@@ -27,10 +26,9 @@ cat /proc/iomem
 安装了 `dtc` 且内核提供导出目录时，可以运行：
 
 ```bash
+# 从运行内核导出的设备树反编译，输出保存为 DTS，供后续按节点查属性。
 dtc -I fs -O dts /sys/firmware/devicetree/base > running-board.dts
 ```
-
-`-I fs` 表示输入来自内核导出的目录，`-O dts` 要求输出可读的设备树文本，`>` 保存这次运行快照，便于和 BSP 中的源文件比较。
 
 反编译可能出现警告，运行 DT 也可能经过 bootloader 修改。它不天然等于源码里某个 `.dts` 原文。记录原始 DTB/源码来源，并对照 model、compatible 与关键设备节点。
 
@@ -53,26 +51,27 @@ dtc -I fs -O dts /sys/firmware/devicetree/base > running-board.dts
 UART 是串行收发器。引导固件可以通过设备树的 `/chosen/stdout-path` 指定早期输出设备。Linux 运行后还可能受内核命令行 `console=` 和控制台驱动影响。在板上运行下面的只读步骤，分别取得固件描述和当前系统的证据。
 
 ```bash
+# 从正在运行的设备树开始；chosen 指定的输出路径可能带冒号和串口参数。
 dt=/sys/firmware/devicetree/base
 if [ -r "$dt/chosen/stdout-path" ]; then
+    # 去掉属性末尾的空字符，再取第一个冒号前面的路径或别名。
     out=$(tr -d '\000' < "$dt/chosen/stdout-path")
     name=${out%%:*}
+    # 以斜杠开头就是完整路径，其余名字要到 aliases 下查找。
     case "$name" in
         /*) path=$name ;;
         *)  path=$(tr -d '\000' < "$dt/aliases/$name") ;;
     esac
+    # 同时显示原始值和解析出的节点路径，便于发现别名解析失败。
     printf 'stdout=%s\nnode=%s\n' "$out" "$path"
     if [ -n "$path" ] && [ -r "$dt$path/compatible" ]; then
+        # compatible 的每个空字符分隔项独占一行，用来和串口驱动匹配表对照。
         tr '\000' '\n' < "$dt$path/compatible"
     fi
 fi
+# 最后核对 Linux 实际登记的控制台，检查它和设备树给出的线索是否一致。
 cat /proc/consoles
 ```
-
-- 第 1–4 行定位运行 DT 并读取 `stdout-path`，去空字节后取冒号前的节点名。
-- 第 5–8 行区分绝对路径和别名：别名需在 `aliases` 下再查一次。
-- 第 9–13 行打印解析结果并读取其兼容字符串。
-- 第 14 行再看 Linux 实际注册的控制台，与固件选的输出路径对照。
 
 举例：若 `stdout-path` 为 `serial2:1500000n8`，冒号前的 `serial2` 是别名，应从 `/aliases/serial2` 得到节点绝对路径；冒号后是串口配置后缀。沿该路径读出的 `compatible` 才能拿去对照 BSP 的驱动匹配表。`/proc/consoles` 列出 Linux 已注册的控制台，把设备名与 `/proc/cmdline` 中的 `console=` 对照，并核对实际控制台输出。示例名称和速率均应由本板输出替换。
 

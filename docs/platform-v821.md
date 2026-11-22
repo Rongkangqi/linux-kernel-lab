@@ -11,8 +11,10 @@
 在能正常启动的 Tina 镜像上保存串口日志。在 Linux shell 运行下面的只读命令，记录内核标识、运行设备树和当前 Linux 在线 CPU 列表。
 
 ```sh
+# 保存内核标识，再从运行设备树核对 SoC 与板型的兼容串。
 uname -a
 tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
+# 记录 Linux 看见的在线 CPU 和 cpuinfo，为区分其他固件运行环境保留依据。
 cat /sys/devices/system/cpu/online
 cat /proc/cpuinfo
 ```
@@ -34,11 +36,15 @@ cat /proc/cpuinfo
 设备树的一个 `cell` 是一个 32 位数。父节点的 `#address-cells` 决定起点占几个数，`#size-cells` 决定长度占几个数。下面是用于纸面推演的虚构片段，地址只用于计算。
 
 ```dts
+/* 教学用的保留内存节点片段。数值为示例，实际地址范围取决于本板内存布局。 */
 reserved-memory {
+    /* 此例用一个 32 位单元编码地址，另一个编码长度；使用时要与根节点约定匹配。 */
     #address-cells = <1>;
     #size-cells = <1>;
+    /* 空 ranges 表示子地址空间到父地址空间采用恒等转换。 */
     ranges;
     ipc@41000000 {
+        /* reg 的两项分别表示起始地址与字节数，此处长度 0x10000 即 64 KiB。 */
         reg = <0x41000000 0x10000>;
     };
 };

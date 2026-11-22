@@ -7,15 +7,20 @@ WSL2 Ubuntu 24.04 用作构建主机，RK3576 从第 1 周运行实验。系统�
 以下 Linux 命令在 Ubuntu 终端中执行。`wsl` 命令只在 Windows PowerShell 执行。
 
 ```powershell
+# 在 Windows 的 PowerShell 中查看发行版名称和 VERSION 列，确认本次启动的是 WSL 2。
 wsl --list --verbose
 ```
 
 ```bash
+# 发行版由根文件系统提供；uname 报告当前内核。把两者分别记下来。
 cat /etc/os-release
 uname -a
 uname -m
+# 查询本机基础页大小，稍后计算逐页访问的步长。
 getconf PAGE_SIZE
+# 检查当前 PATH 是否能找到编译、跟踪和脚本工具。
 command -v cc git make strace python3
+# 源码、实验、笔记和产物分别存放，方便复用同一内核基线。
 mkdir -p ~/kernel-lab/{src,experiments,notes,artifacts}
 ```
 
@@ -26,10 +31,12 @@ mkdir -p ~/kernel-lab/{src,experiments,notes,artifacts}
 以下操作会安装软件、占用磁盘并需要 sudo。只在决定使用这些实验工具时执行；可先安装基础组，架构阶段再装交叉工具链。
 
 ```bash
+# 先刷新软件索引，再安装本机编译、内核配置和调试依赖。
 sudo apt update
 sudo apt install build-essential git ripgrep strace gdb python3 \
   pkg-config bc bison flex libssl-dev libelf-dev libncurses-dev
 # 需要交叉编译或 QEMU 调试时执行
+# 额外安装 AArch64 交叉工具链、多架构 GDB、QEMU 及制作早期根文件系统的工具。
 sudo apt install gcc-aarch64-linux-gnu gdb-multiarch \
   qemu-system-arm cpio xz-utils busybox-static
 ```
@@ -41,10 +48,12 @@ sudo apt install gcc-aarch64-linux-gnu gdb-multiarch \
 通用机制可以选用 **Linux v6.12 作为固定阅读基线**，这是课程的教学选择，不表示它是最新版本，也不表示它完整支持你的 RK3576 板。真实行为优先对照正在运行的内核或 BSP。
 
 ```bash
+# 在源码目录固定到 v6.12 教学基线，浅克隆只取所选版本附近的提交。
 cd ~/kernel-lab/src
 git clone --depth 1 --branch v6.12 \
   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux-v6.12
 cd linux-v6.12
+# 把实际提交号记入实验笔记，之后才能定位完全相同的函数与行号。
 git rev-parse HEAD
 ```
 
@@ -68,8 +77,10 @@ git rev-parse HEAD
 在 WSL 的 Linux 终端执行。`file -L` 会跟随符号链接读到可执行文件；`-dumpmachine` 让编译器报告其默认目标。若交叉编译器尚未安装，先记录前三行。
 
 ```bash
+# uname 看运行内核，file 跟随 /bin/sh 的链接查看用户态 ELF。
 uname -m
 file -L /bin/sh
+# 比较本机 cc 和交叉编译器各自默认的目标三元组。
 cc -dumpmachine
 command -v aarch64-linux-gnu-gcc && aarch64-linux-gnu-gcc -dumpmachine
 ```
@@ -99,7 +110,9 @@ kernel-lab/
 在板上运行 `uname -m` 确认是 AArch64 Linux。对于兼容的 Debian/Ubuntu 用户空间，可在 WSL 安装 `gcc-aarch64-linux-gnu`，进入保存了 [L01 源码](lab-pid.md)的目录，编译静态测试程序。板厂 SDK 可使用其提供的编译器和 sysroot。
 
 ```bash
+# 从主机构建 AArch64 静态程序；-pthread 启用线程支持，-g 保留符号。
 aarch64-linux-gnu-gcc -Wall -O0 -g -static -pthread pid_threads.c -o pid_threads
+# 上板前先确认 ELF 架构和静态链接方式。
 file pid_threads
 ```
 
