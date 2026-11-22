@@ -120,4 +120,10 @@ Threads:        3
 2. 为什么 main 那一行的两列相等？单独查看组长的 `status`，能否区分两个字段的含义？
 3. 哪个标识该传给 `pthread_join`？哪个能在 `ps -L` 的 TID 列中找到？
 
+## 核对你的三道自测
+
+1. 路径是 `/proc/2754/task/2756/status`。`Tgid` 应为 2754，`Pid` 应为 2756；下次运行要换上那一次的实际编号。
+2. main 是该线程组的组长，组长的 TID 用作本组 TGID。因此只看组长时两列相等，选一个 worker 才能让两个定义对应到不同数值。
+3. `pthread_join` 接收创建线程时取得的 `pthread_t`，如变量 `a`。与 `ps -L` 的 TID 列核对时，使用该线程调用 `gettid()` 得到的值。
+
 依据：[gettid(2)](https://man7.org/linux/man-pages/man2/gettid.2.html)、[/proc/PID/status](https://man7.org/linux/man-pages/man5/proc_pid_status.5.html)。下一实验：[L02](lab-wait.md)。

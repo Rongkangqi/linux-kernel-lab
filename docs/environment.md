@@ -63,6 +63,23 @@ git rev-parse HEAD
 
 不能拿上游源码行号解释未知 BSP，也不能把 `uname -r` 相同当成源码完全相同。
 
+## 读懂架构、工具链和产物的三种输出
+
+在 WSL 的 Linux 终端执行。`file -L` 会跟随符号链接读到可执行文件；`-dumpmachine` 让编译器报告其默认目标。若交叉编译器尚未安装，先记录前三行。
+
+```bash
+uname -m
+file -L /bin/sh
+cc -dumpmachine
+command -v aarch64-linux-gnu-gcc && aarch64-linux-gnu-gcc -dumpmachine
+```
+
+举例来说，同一台主机可以依次报告 `x86_64`、`ELF 64-bit ... x86-64`、`x86_64-linux-gnu` 和 `aarch64-linux-gnu`。前三项描述当前内核可见架构、现有程序与本机编译目标。最后一项表示交叉编译器能在此处生成 ARM64 程序。编译后，用 `readelf -h ./pid_threads` 的 `Machine` 核实这一个文件；板上执行时，再查板端 `uname -m`。
+
+**Ubuntu 24.04 能告诉我应该读哪一个内核提交吗？** 它标识用户空间发行版。`uname -r` 给运行内核的 release，BSP 或发行包记录才能进一步关联源码提交、配置和补丁。
+
+**板上明明看得到程序，运行却说找不到，先查什么？** 先确认路径。若是动态 ELF，在 WSL 用 `readelf -l ./程序名` 查 `Requesting program interpreter`，再去板上核实该绝对路径的加载器。若报 `Exec format error`，先核对 ELF 的 `Machine` 和目标系统架构。
+
 ## 目录约定
 
 建议 Linux 源码和编译放在 WSL 的 Linux 文件系统，例如 `~/kernel-lab`。网站仓库可以单独克隆；源码构建产物、板卡镜像、日志原件不要直接提交到网站仓库。

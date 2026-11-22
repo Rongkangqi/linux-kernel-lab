@@ -38,6 +38,33 @@ dtc -I fs -O dts /sys/firmware/devicetree/base > running-board.dts
 
 每一步分别记录。设备存在、驱动绑定和业务成功是三个不同层次。
 
+## 实例：从启动控制台定位一个 UART
+
+UART 是串行收发器。引导固件可以通过设备树的 `/chosen/stdout-path` 指定早期输出设备。Linux 运行后还可能受内核命令行 `console=` 和控制台驱动影响。在板上运行下面的只读步骤，分别取得固件描述和当前系统的证据。
+
+```bash
+dt=/sys/firmware/devicetree/base
+if [ -r "$dt/chosen/stdout-path" ]; then
+    out=$(tr -d '\000' < "$dt/chosen/stdout-path")
+    name=${out%%:*}
+    case "$name" in
+        /*) path=$name ;;
+        *)  path=$(tr -d '\000' < "$dt/aliases/$name") ;;
+    esac
+    printf 'stdout=%s\nnode=%s\n' "$out" "$path"
+    if [ -n "$path" ] && [ -r "$dt$path/compatible" ]; then
+        tr '\000' '\n' < "$dt$path/compatible"
+    fi
+fi
+cat /proc/consoles
+```
+
+举例：若 `stdout-path` 为 `serial2:1500000n8`，冒号前的 `serial2` 是别名，应从 `/aliases/serial2` 得到节点绝对路径；冒号后是串口配置后缀。沿该路径读出的 `compatible` 才能拿去对照 BSP 的驱动匹配表。`/proc/consoles` 列出 Linux 已注册的控制台，把设备名与 `/proc/cmdline` 中的 `console=` 对照，并核对实际控制台输出。示例名称和速率均应由本板输出替换。
+
+**自测一：** `stdout-path` 缺失，能否断言没有串口设备？不能。查看内核命令行、`/proc/consoles` 和板厂串口说明，再从运行设备树中选择已绑定的 UART。
+
+**自测二：** 两块板报相同的 `uname -r`，可以复用其设备树吗？还要确认板型、版本、引脚连线、启动固件以及 DTB 来源。内核 release 字符串不能替代这些硬件和构建证据。
+
 ## SoC 地图最小内容
 
 CPU 集群与核心、GIC、DDR、一个 IOMMU、一个媒体或外设设备、时钟与电源提供者。对每个连接写出来源：厂商文档、实际 DT、源码或观测。未知内容留空并写验证方法。

@@ -41,6 +41,7 @@ file "$HOME/kernel-lab/rootfs-arm64/bin/busybox"
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
+exec </dev/console >/dev/console 2>&1
 echo "ARM64 kernel lab ready"
 exec /bin/sh
 ```
@@ -55,6 +56,15 @@ find . -print0 | cpio --null -o --format=newc | gzip -9 > ../rootfs-arm64.cpio.g
 ```
 
 内核需包含 initramfs、gzip 解压、proc/sysfs、devtmpfs 和 PL011 控制台支持；在生成的 `.config` 中核对，不把所有版本的 defconfig 视为相同。
+
+启动前在 WSL 核对三件物品。`Image` 是 QEMU 加载的内核，`vmlinux` 为 GDB 提供这一构建的符号，归档包含内核运行的第一个用户程序及其解释器。`/init` 挂好 devtmpfs 后重新打开 `/dev/console`，即使归档里没有预制控制台设备节点，shell 也能从串口读写。
+
+```bash
+out="$HOME/kernel-lab/src/out-arm64"
+grep -E '^CONFIG_(BLK_DEV_INITRD|RD_GZIP|DEVTMPFS|PROC_FS|SYSFS|BINFMT_ELF|BINFMT_SCRIPT|SERIAL_AMBA_PL011_CONSOLE)=y' "$out/.config"
+gzip -dc ~/kernel-lab/rootfs-arm64.cpio.gz | cpio -it | grep -E '^(\./)?(init|bin/(sh|busybox))$'
+file "$out/vmlinux" ~/kernel-lab/rootfs-arm64/bin/busybox
+```
 
 ## 启动
 
@@ -71,6 +81,8 @@ qemu-system-aarch64 \
 
 看到提示符后运行 `uname -m`、`cat /proc/cpuinfo`、`cat /proc/interrupts`。`Ctrl+A` 后按 `X` 退出 QEMU。QEMU virt 是通用虚拟板，以上地址布局不适用于 RK3576。x86 主机模拟 ARM64 使用软件翻译，不能拿结果评估 Cortex-A72 的真实 IPC 或 Cache 时延。
 
+客体内再运行 `cat /proc/cmdline` 和 `readlink /proc/1/exe`。前者应包含传入的 `rdinit=/init`，后者通常指向 BusyBox，因为脚本最后用 `exec` 把自己替换成 shell，保留了 PID 1。内核日志可依次找控制台初始化、解包 initramfs 和运行 init 的线索。若能看到内核日志却不能在 shell 输入，先区分日志输出与用户进程的标准输入是否都连到控制台。
+
 ## GDB 与启动断点
 
 在启动命令末尾加 `-S -gdb tcp:127.0.0.1:1234`，QEMU 会暂停。第二终端执行：
@@ -86,6 +98,9 @@ continue
 需要带符号的 `vmlinux`，地址随机化通过此实验中的 `nokaslr` 关闭；生产环境不照搬此参数。启动早期优先使用硬件断点，避免向尚未映射的内核虚拟地址插入软件断点。断点不命中时先核对是否相同构建、符号、架构和连接端口。参见 [QEMU GDB 说明](https://www.qemu.org/docs/master/system/gdb.html)。
 
 ## 故障定位与验收
+
+1. GDB 命中 `start_kernel` 就说明已经执行 `/init` 吗？**参考解释**：此时 CPU 正执行通用内核初始化，用户空间尚未运行。用 `bt` 看调用栈，再 `continue`，到串口出现实验标志后取 PID 1 的证据。
+2. 串口提示无法执行 `/init`，但 `cpio -it` 列出了它，下一步是什么？**参考解释**：检查执行位、首行是否使用 Unix 换行、`/bin/sh` 链接及其 BusyBox 目标，然后确认 ELF 架构和加载器。路径存在只解决了查找入口这一个条件。
 
 `No working init found` 检查 `/init`、权限、解释器路径、架构与静态链接；无控制台输出检查串口和控制台配置；内存不足降低并发和 QEMU 内存需求。
 

@@ -18,6 +18,26 @@ RK3576 集成 4 个 Cortex-A72 与 4 个 Cortex-A53；从[厂商产品页](https
 
 使用 `/sys/devices/system/cpu/` 中可用的 topology、cache 和 cpufreq 信息对照文档。缓存层次、频率策略和节点布局以当前系统为准。不要为了测频率直接禁用热保护或电源管理。
 
+### 读懂一份 CPU 调频策略表
+
+一个 `cpufreq policy` 描述由同一个调频策略管理的一组 CPU。先列出本板在线 CPU，再读策略与核心的关系。脚本只取已有节点，缺失字段保留为未知。
+
+```bash
+cat /sys/devices/system/cpu/online
+for p in /sys/devices/system/cpu/cpufreq/policy*; do
+    [ -r "$p/related_cpus" ] || continue
+    printf '%s manages ' "${p##*/}"
+    cat "$p/related_cpus"
+    [ ! -r "$p/scaling_driver" ] || cat "$p/scaling_driver"
+done
+```
+
+假设某次读到 `policy0 manages 0 1 2 3`，你能得出“这四个逻辑 CPU 在同一调频策略集合中”。这条输出没有给出 Cortex 型号、缓存共享范围或哪个核更快。接着用 `tr '\000' '\n' < /sys/devices/system/cpu/cpu0/of_node/compatible` 寻找实现标识，并到 `cpu0/cache/index*/shared_cpu_list` 核对缓存拓扑。若 CPU 设备未导出 `of_node`，从运行设备树的 `/cpus` 节点读 `compatible`，核对 `reg` 与逻辑 CPU 的映射后再贴标签。
+
+**自测一：** 为何 `online` 只列 6 个 CPU，芯片规格仍可能是八核？比较同目录的 `possible`、`present` 与 `offline`，再查启动日志。固件描述、内核限制或热插拔状态均可能影响数量。
+
+**自测二：** 按频率最高的一组标为 A72，就能解释任务慢吗？还需确认核型及任务实际运行的 CPU，控制负载和温度，记录频率及时间。只有同一负载的可重复测量才支持性能结论。
+
 ## 第 26 周：追一个外设的依赖
 
 选串口、I²C 或媒体设备中的一个，整理引脚复用、时钟、复位、电源域、IRQ 和 IOMMU。沿 DT 引用追到提供者驱动，解释资源为何在 probe 中获取，何时启动和停止。

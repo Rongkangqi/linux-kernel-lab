@@ -13,6 +13,27 @@ RK3576 是本路线的主力实机平台。它把 ARM CPU 核与内存、互连�
 
 厂商资料确认其 CPU 组合为 **4 × Cortex-A72 + 4 × Cortex-A53**。更细的缓存、互连和外设能力请按资料版本与实际 BSP 核对，不从相近型号推断支持情况。[RK3576 产品页](https://www.rock-chips.com/a/en/products/RK35_Series/2024/1212/2033.html)
 
+## 走一次证据链：Linux 怎么知道这块板上有哪几种 CPU？
+
+在 RK3576 终端读运行中的设备树，再对照 Linux 启用的 CPU。设备树的 `compatible` 是一个可以含多个字符串的属性，各字符串以空字节结尾；`tr` 用空格把它们分开。读不到目录时，先检查镜像是否导出了设备树，再用该镜像对应的 DTB 离线查看。
+
+```sh
+tree=/sys/firmware/devicetree/base
+for cpu in "$tree"/cpus/cpu@*; do
+    [ -r "$cpu/compatible" ] || continue
+    printf '%s ' "${cpu##*/}"
+    tr '\000' ' ' < "$cpu/compatible"
+    printf '\n'
+done
+cat /sys/devices/system/cpu/online
+```
+
+若某一行含 `arm,cortex-a72`，它说明固件传入的树将这个节点描述为 Cortex-A72。若 `online` 返回 `0-7`，表示当前 Linux 有八个逻辑 CPU 在线。把两项放进不同列：前者是硬件描述，后者是运行状态。要进一步回答线程在哪个核上实际运行，还需调度事件的 CPU 列。DT 节点名里的单元地址不宜直接作为 Linux 的逻辑 CPU 编号。
+
+**产品页说有八核，板上只看到四个怎么办？** 先比较 `/sys/devices/system/cpu/{possible,present,online}` 的内容，分别了解内核可能支持、当前识别和当前在线的集合，再对照启动日志、内核配置与固件给出的 CPU 节点。三个集合的差异可以缩小排查范围。
+
+**一个任务在某个 A72 上用时更短，能归因于核型吗？** 先把频率、温度、允许的 CPU 和后台负载固定或记录，再用相同输入重复测量。核型只是候选因素之一。
+
 ## 六条阅读线
 
 1. **CPU 与调度：** 核心拓扑、capacity、频率和热管理如何影响任务放置。

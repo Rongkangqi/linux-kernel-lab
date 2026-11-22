@@ -18,6 +18,24 @@ QEMU virt 的设备、地址、中断与时钟不等于 Rockchip SoC。所选 CP
 4. 使用明确配置观察 GIC 和 SMP；比较一核与两核时的 CPU/IRQ 输出。
 5. 逐步启用 tracing、lockdep 等调试能力，记录额外开销。
 
+## 不编内核也能先看虚拟硬件
+
+设备树（DT）是传给内核的硬件描述。QEMU 的 `virt` 可以把这份描述写成二进制 DTB。下面在新的实验目录操作，需要 `qemu-system-aarch64` 和 `dtc`（Ubuntu 的 `device-tree-compiler` 包）。
+
+```bash
+mkdir -p ~/kernel-lab/experiments/virt-dt
+cd ~/kernel-lab/experiments/virt-dt
+qemu-system-aarch64 -machine virt,dumpdtb=two.dtb -cpu cortex-a57 -smp 2 -m 512 -nographic
+dtc -I dtb -O dts -o two.dts two.dtb
+grep -nE 'cpu@|device_type = "cpu"' two.dts
+```
+
+`-machine virt` 选虚拟板，`-cpu` 选 CPU 模型，`-smp 2` 请求两个虚拟 CPU，`-m 512` 配置 512 MiB 内存。指定 `dumpdtb` 后，QEMU 写出描述即退出。找两个带 `device_type = "cpu"` 的节点，再将输出名字改成 `one.dtb`、核数改成 1 重做，反编译新文件比较 CPU 节点数。[QEMU virt 文档](https://www.qemu.org/docs/master/system/arm/virt.html)
+
+**看到两个节点，已经证明 Linux 调度过两个线程了吗？** 这说明虚拟硬件公布了两个 CPU。启动来宾后看 `/sys/devices/system/cpu/online`，要观察某个线程真的在哪里运行，再看调度记录。
+
+**能用这份 DTB 启动 RK3576 吗？** 真板的内存映射、中断控制器和外设资源由 SoC 与电路板决定。可以复用读 CPU 节点的方法，板上启动时使用对应板型的 DTB。
+
 ## 到实机的迁移
 
 任务、VFS、地址转换框架等通用知识可以迁移；启动固件、寄存器、设备树、clock/reset/power 驱动和媒体路径必须对照 RK3576。把同一问题分别放到虚拟平台与实机上，能帮助判断是通用机制还是平台集成问题。

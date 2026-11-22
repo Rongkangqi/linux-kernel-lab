@@ -8,11 +8,35 @@
 
 [Rockchip MPP 仓库](https://github.com/rockchip-linux/mpp)可作为用户态实现入口。实际板卡可能使用特定提交或厂商修改，不能只拿 master 对照二进制行为。
 
+下面以一帧 H.264 解码作为起点。如果 WSL 的 FFmpeg 提供 libx264，可在新的空目录生成自己的测试输入，降低多帧重排和外部素材带来的干扰。把 `one.h264` 复制到板上的实验目录，用同一个 SHA-256 确认两端输入相同。也可以使用板厂提供并已验证的小码流，按它的实际编码格式选参数。
+
+```bash
+ffmpeg -hide_banner -f lavfi -i testsrc2=size=320x240:rate=1 \
+  -frames:v 1 -c:v libx264 -pix_fmt yuv420p -f h264 one.h264
+sha256sum one.h264
+```
+
+在板端运行 `command -v mpi_dec_test` 并查阅该测试程序的帮助（上游版本可不带参数运行）。当帮助明确列出 `-i` 为码流、`-t 7` 为 AVC/H.264、`-n 1` 为至多一帧时，使用下面的 Bash 示例。先查看 `baseline.log` 确认解码器成功输出一帧，只有初始化、格式变化或 EOS 提示都不足以证明输出了一帧。各 BSP 的日志文字和设备名会变化。[上游参数实现](https://github.com/rockchip-linux/mpp/blob/develop/utils/mpi_dec_utils.c) · [编码类型枚举](https://github.com/rockchip-linux/mpp/blob/develop/inc/rk_type.h)
+
+```bash
+decode=(mpi_dec_test -i one.h264 -t 7 -n 1)
+"${decode[@]}" >baseline.log 2>&1
+cat baseline.log
+```
+
 ## 第一步：从用户边界找入口
 
 用 `strace -f -tt -T` 记录打开的设备节点、ioctl、poll/read/write 等。某些程序可能通过其他库或服务间接提交；以实际 trace 为准。不要预先认定所有 BSP 都使用同一 `/dev` 路径。
 
 将一次 API 操作关联到 fd 与 ioctl 编号，回到匹配版本的头文件解释参数结构。参数可能包含缓冲区句柄而非 CPU 地址。
+
+```bash
+strace -f -yy -tt -T -e trace=openat,ioctl,poll,ppoll,read,write \
+  -o one.trace "${decode[@]}" >traced.log 2>&1
+grep -E '/dev/|ioctl\(' one.trace | head -n 40
+```
+
+同一终端复用刚定义的 `decode` 数组。`-f` 跟踪子线程，`-yy` 尽可能把 fd 与其对象关联。旧版 strace 不支持 `-yy` 时去掉这个选项，从打开设备返回的 fd 顺查到后续 ioctl。若只有 `ENOENT` 或 `EACCES`，先查镜像中的设备与访问权限，保存错误行；在正常样例成立前不要给 IRQ 或耗时作归因。
 
 ## 第二步：在内核中找对象
 
@@ -43,6 +67,9 @@
 同样是返回慢，可能来自任务排队、CPU 调度、硬件执行、同步等待或输入供给。一次只改变一个因素，例如输入规模、并发数量、CPU 亲和性；记录负载和温度条件。不通过禁用保护机制获取“更好数据”。
 
 ## 最终验收
+
+1. 同一帧的日志里有多次 ioctl，哪一次才算“提交”？**参考解释**：查询能力、申请内存、配置格式和提交任务都可能走 ioctl。要把请求号和参数与匹配版本的用户库、内核分发分支相连，再用任务标识或时间顺序关联该帧。
+2. 观察到一次 IRQ、一次用户线程唤醒，这两个点之间就是硬件解码时间吗？**参考解释**：IRQ 可以出现在硬件已经完成之后，唤醒还可能由其他事件触发。先找到启动硬件、完成确认、等待者和调度上 CPU 的证据，缺少的阶段在时间线上留空。
 
 按[综合项目标准](capstone.md)交付版本、输入、复现、对象图、时间线与至少两组反例。明确哪些结论来自观测，哪些来自源码推断，哪些仍需要芯片手册或硬件工具确认。
 
