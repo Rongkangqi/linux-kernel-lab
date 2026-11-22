@@ -14,6 +14,10 @@ cat /proc/interrupts
 cat /proc/iomem
 ```
 
+- 前 3 行依次记录用户发行版、运行内核和 CPU 报告。
+- 第 4–5 行用 `tr` 把设备树字符串末尾的空字节换成换行，分别核对板名与兼容列表。
+- 第 6 行读每 CPU 的 IRQ 计数，第 7 行查内核公开的物理资源区间；权限可能限制地址显示。
+
 有的文件受权限或内核配置限制；记录“不可读/未提供”，不要把空输出当硬件不存在。`/proc/iomem` 地址也可能被隐藏。日志使用 `dmesg` 或板上可用的 journal 接口，必要时通过 sudo 只读获取。
 
 不要直接 `cat` 二进制 DT 属性来猜数值。model/compatible 是字符串；reg、interrupts 等需要按 DT 编码和 binding 解码。
@@ -25,6 +29,8 @@ cat /proc/iomem
 ```bash
 dtc -I fs -O dts /sys/firmware/devicetree/base > running-board.dts
 ```
+
+`-I fs` 表示输入来自内核导出的目录，`-O dts` 要求输出可读的设备树文本，`>` 保存这次运行快照，便于和 BSP 中的源文件比较。
 
 反编译可能出现警告，运行 DT 也可能经过 bootloader 修改。它不天然等于源码里某个 `.dts` 原文。记录原始 DTB/源码来源，并对照 model、compatible 与关键设备节点。
 
@@ -62,6 +68,11 @@ if [ -r "$dt/chosen/stdout-path" ]; then
 fi
 cat /proc/consoles
 ```
+
+- 第 1–4 行定位运行 DT 并读取 `stdout-path`，去空字节后取冒号前的节点名。
+- 第 5–8 行区分绝对路径和别名：别名需在 `aliases` 下再查一次。
+- 第 9–13 行打印解析结果并读取其兼容字符串。
+- 第 14 行再看 Linux 实际注册的控制台，与固件选的输出路径对照。
 
 举例：若 `stdout-path` 为 `serial2:1500000n8`，冒号前的 `serial2` 是别名，应从 `/aliases/serial2` 得到节点绝对路径；冒号后是串口配置后缀。沿该路径读出的 `compatible` 才能拿去对照 BSP 的驱动匹配表。`/proc/consoles` 列出 Linux 已注册的控制台，把设备名与 `/proc/cmdline` 中的 `console=` 对照，并核对实际控制台输出。示例名称和速率均应由本板输出替换。
 

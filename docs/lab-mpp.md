@@ -16,6 +16,9 @@ ffmpeg -hide_banner -f lavfi -i testsrc2=size=320x240:rate=1 \
 sha256sum one.h264
 ```
 
+- 第一条的 `testsrc2` 产生已知尺寸的画面，`-frames:v 1` 限为一帧，`libx264` 和 `-f h264` 选编码器与裸码流格式。
+- 第二条记录摘要，传板后再次计算以核实输入一致。
+
 在板端运行 `command -v mpi_dec_test` 并查阅该测试程序的帮助（上游版本可不带参数运行）。当帮助明确列出 `-i` 为码流、`-t 7` 为 AVC/H.264、`-n 1` 为至多一帧时，使用下面的 Bash 示例。先查看 `baseline.log` 确认解码器成功输出一帧，只有初始化、格式变化或 EOS 提示都不足以证明输出了一帧。各 BSP 的日志文字和设备名会变化。[上游参数实现](https://github.com/rockchip-linux/mpp/blob/develop/utils/mpi_dec_utils.c) · [编码类型枚举](https://github.com/rockchip-linux/mpp/blob/develop/inc/rk_type.h)
 
 ```bash
@@ -23,6 +26,8 @@ decode=(mpi_dec_test -i one.h264 -t 7 -n 1)
 "${decode[@]}" >baseline.log 2>&1
 cat baseline.log
 ```
+
+第 1 行在 Bash 数组中保存完整命令和参数，第 2 行展开数组运行并把标准输出和错误合写日志，第 3 行读回结果。先核对确有一帧输出，再录制跟踪。
 
 ## 第一步：从用户边界找入口
 
@@ -35,6 +40,8 @@ strace -f -yy -tt -T -e trace=openat,ioctl,poll,ppoll,read,write \
   -o one.trace "${decode[@]}" >traced.log 2>&1
 grep -E '/dev/|ioctl\(' one.trace | head -n 40
 ```
+
+前两行组成一条命令。`-f` 跟线程，`-yy` 帮助识别 fd，`-o` 单独保存系统调用，测试程序输出仍进 `traced.log`。末行先筛出设备和 ioctl 样本；后续还要在完整日志里配对同一个 fd 与请求。
 
 同一终端复用刚定义的 `decode` 数组。`-f` 跟踪子线程，`-yy` 尽可能把 fd 与其对象关联。旧版 strace 不支持 `-yy` 时去掉这个选项，从打开设备返回的 fd 顺查到后续 ioctl。若只有 `ENOENT` 或 `EACCES`，先查镜像中的设备与访问权限，保存错误行；在正常样例成立前不要给 IRQ 或耗时作归因。
 

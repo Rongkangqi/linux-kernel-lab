@@ -20,6 +20,11 @@ os.close(fd)
 '
 ```
 
+- **跟着 fd 的偏移走。** 第 1–2 行新建本次实验目录，避免截断旧数据。
+- 第 3–5 行启动跟踪，并创建或清空 `sample.dat`。
+- 第 6 行写完后偏移在末尾，第 7 行 `fsync` 请求同步，第 8 行显式把偏移移回 0。因此第 9 行能读回刚写的字节；去掉 `lseek`，从当前文件末尾再读会得到空字节串。
+- 第 10 行关闭 fd。
+
 找到目标文件的 fd，关联 write、fsync、lseek、read、close。记录返回值，解释它们分别证明了什么。再次运行读取不构成严格的存储性能测试，可能命中缓存。
 
 先用 `grep -n 'sample.dat' file.trace` 找到 `openat` 返回的描述符，再读这行之后针对同一 fd 的记录。在这里 `write` 预期返回 11（包含换行），`fsync` 成功返回 0；`lseek` 置回偏移 0，随后读出相同的 11 字节。如果系统缺少 `strace`，先用裸 `python3` 执行相同脚本，再按照[工具清单](environment.md)补装追踪工具。
@@ -66,11 +71,23 @@ t.join()
 print(b"".join(parts))
 ```
 
+- **找出是哪一行在等发送者。** 第 7 行创建互相连通的 socket。
+- 第 8–11 行定义发送者：等 2 秒，发完 `ping`，离开 `with tx` 时关闭发送端。
+- 第 13–14 行启动线程。
+- 第 15–19 行仅在命令带 `poll` 参数时把读端改成非阻塞并订阅可读事件。
+- 第 20–24 行准备收集字节，poll 模式先等待事件。
+- 第 25–28 行尝试 `recv`，暂时无数据就回到循环；普通模式可直接等在 `recv`。
+- 第 29–31 行以零字节识别 EOF，否则保存本次收到的片段。
+- 第 32–33 行等线程结束、拼出完整消息。
+
 ```bash
 strace -f -tt -T -e trace=network,poll,ppoll -o block.trace python3 pair.py
 strace -f -tt -T -e trace=network,poll,ppoll -o poll.trace python3 pair.py poll
 cat block.trace poll.trace
 ```
+
+- 前两行只改变程序的 `poll` 参数，各保存一份跟踪。`-f` 跟踪发送线程，`-e` 缩小到网络及等待调用。
+- 第三行对照两份日志，找哪条调用跨过了约两秒。
 
 两轮都应得到 `b'ping'`。在第一轮定位等待较久的接收调用（Linux 上常见 `recvfrom`），第二轮找 `poll` 或 `ppoll`。等待可以被移到就绪接口，接收数据的操作依然存在。多线程 trace 中若一行标记 `unfinished`，要找同一线程的 `resumed` 行拼起来。若遇到空读，先确认发送端是否已经关闭，别把 EOF 当作“稍后重试”。
 
@@ -94,6 +111,11 @@ print(os.read(a, 1), os.read(b, 1))
 os.close(b)
 os.close(a)
 ```
+
+- 第 2 行打开文件，偏移从 0 开始。
+- 第 3 行 `dup` 建立新 fd，指向同一打开文件描述。
+- 第 4 行按从左到右的顺序读取，第二个 fd 读到下一个字节。
+- 第 5–6 行分别交还两个引用。
 
 两次读取应分别取到 `b'k'` 和 `b'e'`。再用第二次 `os.open` 代替 `os.dup`，预测并验证两次都会从文件开头读。
 

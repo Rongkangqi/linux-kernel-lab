@@ -120,6 +120,15 @@ function render() {
   $$('.prose table').forEach(table => { const wrapper = document.createElement('div'); wrapper.className='table-wrap'; wrapper.tabIndex=0; wrapper.setAttribute('role','region'); wrapper.setAttribute('aria-label','可横向滚动的表格'); table.before(wrapper); wrapper.append(table); });
   $$('.prose pre').forEach(pre => {
     const code = $('code',pre); if (!code) return;
+    if (path.startsWith('/docs/lab-') && code.className && !code.classList.contains('language-text')) {
+      const lines = code.textContent.replace(/\n$/, '').split('\n');
+      const numbers = document.createElement('span');
+      numbers.className = 'code-line-numbers';
+      numbers.setAttribute('aria-hidden', 'true');
+      numbers.textContent = lines.map((_, index) => index + 1).join('\n');
+      pre.classList.add('numbered-code');
+      code.before(numbers);
+    }
     const label = document.createElement('span'); label.className='code-label'; label.textContent=code.className.replace('language-','') || 'TEXT';
     const button = document.createElement('button'); button.className='copy-code'; button.textContent='复制'; button.setAttribute('aria-label','复制这段代码');
     button.addEventListener('click',async () => { try { await navigator.clipboard.writeText(code.textContent); button.textContent='已复制 ✓'; setTimeout(() => { button.textContent='复制'; },1800); } catch { toast('无法自动复制，请选中代码手动复制。'); } }); pre.append(label,button);

@@ -13,6 +13,8 @@ mkdir -p board/kernel-lab/overlay/etc
 printf '%s\n' 'kernel-lab rootfs v1' > board/kernel-lab/overlay/etc/kernel-lab-id
 ```
 
+第一行建出覆盖层中的 `etc` 目录，第二行写入标记。构建时这个相对布局会合并到新根目录，启动或 chroot 后才从 `/etc/kernel-lab-id` 读取。
+
 ```bash
 make O="$HOME/br-rk-lab" menuconfig
 make O="$HOME/br-rk-lab"
@@ -21,6 +23,9 @@ file "$HOME/br-rk-lab/target/bin/busybox"
 tar -tf "$HOME/br-rk-lab/images/rootfs.tar" | head
 sha256sum "$HOME/br-rk-lab/images/rootfs.tar"
 ```
+
+- 前 3 行共用同一输出目录，依次配置、构建并保存最小配置。
+- 第 4 行核对 BusyBox 架构，第 5 行只列归档内容，第 6 行计算归档摘要。上板时要传这一份归档。
 
 归档中的文件权限、符号链接与设备条目由镜像生成阶段处理。向板上传输 `images/rootfs.tar`，同时保存输出目录的 `defconfig`。`target/` 用于检查构建结果。
 
@@ -38,6 +43,9 @@ sudo chroot "$labroot" /bin/busybox cat /etc/kernel-lab-id
 uname -r
 sudo chroot "$labroot" /bin/busybox uname -r
 ```
+
+- 第 1 行创建空目录；第 2–3 行在解包成功后才运行新 BusyBox。
+- 第 4 行从新根内核对标记。末两行分别从旧用户空间和新目录运行 `uname`，两者仍向同一内核查询。
 
 预期两次内核 release 一致。`chroot` 改变进程查找文件的根目录，仍在使用已启动的内核。如果 BusyBox 明明存在却报找不到文件，在 WSL 用 `readelf -l` 检查解释器路径，再看目标归档中对应加载器是否存在。若报执行格式错误，核对 ELF 机器类型。
 

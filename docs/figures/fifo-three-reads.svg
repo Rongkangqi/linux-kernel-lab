@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="332" viewBox="0 0 660 332" role="img" aria-labelledby="title desc">
+  <title id="title">同一个非阻塞读端的三次读取</title>
+  <desc id="desc">从上向下看。第一次写端打开，缓冲区空，读报 EAGAIN。第二次写端关闭，缓冲区里还有 X，读取成功。第三次写端仍关闭，缓冲区已空，读到 EOF。</desc>
+  <rect width="660" height="332" rx="12" fill="#f9fafc"/>
+  <g font-family="system-ui, Microsoft YaHei, sans-serif" fill="#1c293e">
+    <text x="26" y="40" font-weight="700" font-size="24">同一个 r，三次 read(r, 32)</text>
+    <g font-size="16" fill="#485870">
+      <text x="26" y="79">读之前</text><text x="244" y="79">写端 w</text><text x="342" y="79">缓冲区</text><text x="492" y="79">读的结果</text>
+    </g>
+    <path d="M26 92H634 M26 162H634 M26 232H634" stroke="#d2dae5"/>
+    <g font-size="19">
+      <text x="26" y="134">① 刚打开 w</text><text x="244" y="134">开着</text>
+      <text x="26" y="204">② 写入 X，再关闭 w</text><text x="244" y="204">已关</text>
+      <text x="26" y="274">③ 上一次读走了 X</text><text x="244" y="274">已关</text>
+    </g>
+    <g fill="#fff" stroke="#667990" stroke-width="2">
+      <rect x="340" y="108" width="84" height="36" rx="6"/><rect x="340" y="178" width="84" height="36" rx="6"/><rect x="340" y="248" width="84" height="36" rx="6"/>
+    </g>
+    <rect x="345" y="182" width="30" height="28" rx="4" fill="#d4e5ff"/>
+    <g font-size="17" text-anchor="middle">
+      <text x="382" y="132">空</text><text x="360" y="202">X</text><text x="382" y="272">空</text>
+    </g>
+    <g fill="none" stroke="#65758c" stroke-width="2">
+      <path d="M436 126h37m-7-6 7 6-7 6 M436 196h37m-7-6 7 6-7 6 M436 266h37m-7-6 7 6-7 6"/>
+    </g>
+    <g font-family="monospace" font-size="21" font-weight="bold">
+      <text x="492" y="133" fill="#875a15">EAGAIN</text><text x="492" y="203" fill="#2e6949">b'X'</text><text x="492" y="273" fill="#3c5582">b'' (EOF)</text>
+    </g>
+    <text x="26" y="312" font-size="16" fill="#485870">先看还有没有字节，缓冲区空时再看写端。</text>
+  </g>
+</svg>

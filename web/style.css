@@ -760,6 +760,27 @@ main:focus {
   font-size:.76rem;
 }
 
+.prose pre.numbered-code {
+  display:grid;
+  grid-template-columns:max-content max-content;
+  column-gap:1em;
+}
+
+.numbered-code .code-line-numbers,
+.prose pre.numbered-code code {
+  font-family:var(--mono);
+  font-size:.88rem;
+  line-height:1.7;
+}
+
+.code-line-numbers {
+  align-self:start;
+  color:#a6b2c8;
+  text-align:right;
+  white-space:pre;
+  user-select:none;
+}
+
 .code-label {
   left:20px;
   font-family:var(--mono);

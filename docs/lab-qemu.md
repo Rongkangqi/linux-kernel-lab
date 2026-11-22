@@ -17,6 +17,9 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=../out-arm64 defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=../out-arm64 -j4 Image
 ```
 
+- 第一行选择 ARM64 默认内核配置，`O=` 隔离产物。
+- 第二行使用同一架构、工具链和输出目录，用最多 4 个并行作业构建 `Image`。
+
 为 GDB 增加调试信息时，使用同一个输出目录的 `menuconfig` 检查 `CONFIG_DEBUG_INFO` 相关选项并重新构建。具体菜单取决于版本；保留 `vmlinux`，不要只保留压缩/裸 Image。
 
 ## 用 BusyBox 准备最小 initramfs
@@ -32,6 +35,10 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CONFIG_PREFIX="$HOME/kernel-lab
 file "$HOME/kernel-lab/rootfs-arm64/bin/busybox"
 ```
 
+- 第 1–3 行以默认配置起步，进入菜单选择静态链接。
+- 第 4 行编译，第 5 行将 BusyBox 及命令入口安装到指定的实验根目录。
+- 第 6 行用 `file` 核对生成物的架构与链接方式。
+
 确认 `file` 显示 AArch64 且静态链接；若编译报兼容性错误，保留版本/日志并解决，不继续打包错误架构文件。另一条可行路线是使用固定版本的 Buildroot 生成 rootfs，但不要把两套未核实步骤混在一起。
 
 新建 `~/kernel-lab/rootfs-arm64/init`：
@@ -46,6 +53,11 @@ echo "ARM64 kernel lab ready"
 exec /bin/sh
 ```
 
+- 第 1 行指定由 `/bin/sh` 解释。
+- 第 2–4 行依次挂载进程、设备模型与设备节点接口。
+- 第 5 行让当前 shell 的输入、输出和错误连接到控制台。
+- 第 6 行是可见的启动标志，第 7 行用交互 shell 替换当前进程，保留 PID。
+
 在 Ubuntu 中打包（目录需要是你新建的实验 rootfs）：
 
 ```bash
@@ -54,6 +66,10 @@ mkdir -p dev proc sys tmp
 chmod +x init
 find . -print0 | cpio --null -o --format=newc | gzip -9 > ../rootfs-arm64.cpio.gz
 ```
+
+- 第 1 行切到本次根目录。
+- 第 2–3 行准备挂载点并使 init 可执行。
+- 第 4 行从当前目录枚举文件，用空字节传递文件名、打包成 newc 格式并压缩，输出放在上一级目录。
 
 内核需包含 initramfs、gzip 解压、proc/sysfs、devtmpfs 和 PL011 控制台支持；在生成的 `.config` 中核对，不把所有版本的 defconfig 视为相同。
 
@@ -65,6 +81,9 @@ grep -E '^CONFIG_(BLK_DEV_INITRD|RD_GZIP|DEVTMPFS|PROC_FS|SYSFS|BINFMT_ELF|BINFM
 gzip -dc ~/kernel-lab/rootfs-arm64.cpio.gz | cpio -it | grep -E '^(\./)?(init|bin/(sh|busybox))$'
 file "$out/vmlinux" ~/kernel-lab/rootfs-arm64/bin/busybox
 ```
+
+- 第 1 行指定自己的内核构建产物目录。
+- 第 2 行查所需内建配置；第 3 行在压缩归档中检查 init、shell 和 BusyBox 的路径；第 4 行核对符号文件和用户程序架构。
 
 ## 启动
 
@@ -78,6 +97,11 @@ qemu-system-aarch64 \
   -initrd ~/kernel-lab/rootfs-arm64.cpio.gz \
   -append 'console=ttyAMA0 rdinit=/init nokaslr'
 ```
+
+- 这是一条用反斜杠续行的命令。
+- 第 2 行确定虚拟板、CPU、核数、内存；第 3 行在终端使用串口。
+- 第 4–5 行分别加载内核和早期用户空间。
+- 第 6 行告诉内核从哪个控制台输出、执行哪个 init，并在这次调试中使用固定地址布局。
 
 看到提示符后运行 `uname -m`、`cat /proc/cpuinfo`、`cat /proc/interrupts`。`Ctrl+A` 后按 `X` 退出 QEMU。QEMU virt 是通用虚拟板，以上地址布局不适用于 RK3576。x86 主机模拟 ARM64 使用软件翻译，不能拿结果评估 Cortex-A72 的真实 IPC 或 Cache 时延。
 
@@ -94,6 +118,8 @@ target remote 127.0.0.1:1234
 hbreak start_kernel
 continue
 ```
+
+第一行在宿主打开带符号的 `vmlinux`。其余指令在 GDB 提示符内输入：先连接正在暂停的 QEMU，再设置 `start_kernel` 硬件断点，最后 `continue` 放行直至命中。
 
 需要带符号的 `vmlinux`，地址随机化通过此实验中的 `nokaslr` 关闭；生产环境不照搬此参数。启动早期优先使用硬件断点，避免向尚未映射的内核虚拟地址插入软件断点。断点不命中时先核对是否相同构建、符号、架构和连接端口。参见 [QEMU GDB 说明](https://www.qemu.org/docs/master/system/gdb.html)。
 

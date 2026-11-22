@@ -11,6 +11,9 @@ rg -n 'dma_alloc_coherent|dma_map_sg|dma_map_single' drivers
 rg -n 'dma_buf_attach|dma_buf_map_attachment|dma_buf_begin_cpu_access' drivers
 ```
 
+- 第一行从 `drivers` 找分配和映射接口，`-n` 保留行号。
+- 第二行找共享缓冲区的附着、映射和 CPU 访问入口。从搜索结果选一个当前驱动，再沿它自己的调用链读。
+
 选择一个与板上已工作的设备有关的路径，记录设备、驱动、源码提交与配置。搜索命中不证明实际运行，一定要把 DT、绑定驱动和用例对上。
 
 第一次阅读可从 Linux v6.12 的 SDHCI 存储控制器开始。这里能在同一文件里追到 scatterlist（分散在不同页上的多段数据）、设备描述符和解除映射。一份文件即使对用户连续，也可以由多段内存组成。进入[固定版本源码](environment.md)的根目录执行下面的只读查询。此例用来学习 API；板上是否执行它，留待后面的驱动绑定核对。[v6.12 SDHCI 实现](https://github.com/torvalds/linux/blob/v6.12/drivers/mmc/host/sdhci.c)
@@ -20,6 +23,9 @@ f=drivers/mmc/host/sdhci.c
 rg -n 'sdhci_pre_dma_transfer|dma_map_sg\(|dma_unmap_sg\(' "$f"
 rg -n 'sg_dma_(address|len)\(|sdhci_adma_table_pre|COOKIE_PRE_MAPPED' "$f"
 ```
+
+- 第一行固定示例文件。
+- 第二行定位建立和撤销映射的地方；第三行搜索设备地址、段长度、描述符表和预映射状态。用这些位置连接「谁建映射、谁用返回值、谁解除」。
 
 从 `sdhci_pre_dma_transfer` 的直接映射分支开始，在纸上抄出传入的设备、`data->sg_len`、数据方向和返回的 `sg_count`。如果返回 0，跟到失败返回处就停止；成功时再追哪些地址和长度被写进 ADMA 描述符。地图上另画出 bounce buffer 和预映射两个分支，避免把三个互斥条件拼成一次传输。
 
@@ -62,6 +68,10 @@ for host in /sys/class/mmc_host/mmc*; do
     fi
 done
 ```
+
+- 第 1–3 行遍历 MMC 主机，只保留能找到设备的条目并打印路径。
+- 第 4 行解析驱动符号链接，第 5–7 行在属性可读时逐项打印 compatible。
+- 第 8 行继续下一主机。没有候选设备时，这个循环不提供板端绑定证据。
 
 1. **示例推算**：输入 4 段，`dma_map_sg` 返回 3，该取哪一个数？**参考解释**：硬件描述符按映射后的 3 段生成，DMA 层可能合并输入段；`dma_unmap_sg` 传入最初的 4、同一个设备和方向。这组数字是教学假设。
 2. 内核已经拿到 DMA 地址，能否立即把这块缓冲分给下一个任务？**参考解释**：映射只建立寻址关系。还需要驱动确认传输结束、完成相应同步和引用交接；中断计数增长本身也没有标明是哪一个请求完成。

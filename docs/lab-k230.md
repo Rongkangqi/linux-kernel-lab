@@ -22,6 +22,9 @@ cat /proc/iomem
 tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
 ```
 
+- 第 1 行认出当前内核，第 2 行取得其在线逻辑 CPU 集合。
+- 第 3 行读该系统提供的 CPU 信息，第 4 行核对内存资源，第 5 行把 DT 的兼容字符串分行。把它们和本镜像的固件、构建目标对应起来，不能仅靠在线编号推算另一侧固件状态。
+
 若系统未导出设备树，从镜像对应的 DTB 入手，同时注明 bootloader 可能修订过设备树。`cpu/online` 记录 Linux 当前调度得到的逻辑 CPU；hart ID、Linux CPU 编号与开发板串口号分别保留。
 
 ## 追一次固件到内核的交接
@@ -36,6 +39,9 @@ tr '\000' '\n' < /sys/firmware/devicetree/base/compatible
 grep -nE '^(little-core-opensbi|big-core-opensbi):|FW_PAYLOAD_PATH=' Makefile
 grep -E '^CONFIG_SUPPORT_(LINUX|RTSMART)=' .config
 ```
+
+- 第一行在构建规则中找两侧 OpenSBI 目标和 payload 路径，`-n` 保留可回查的位置。
+- 第二行从这次构建的配置判断启用了哪些系统。前者列出配方，后者帮助选出本镜像实际采用的分支。
 
 以经典 Makefile 为例，`little-core-opensbi` 配方的 payload 指向 `arch/riscv/boot/Image`，`big-core-opensbi` 的相应配方使用 `rtthread.bin`。payload 是固件装载或跳转的下一阶段程序。记录时把目标名、文件路径、启用条件写在同一行，再检查实际打包产物。SDK 内的搜索会同时命中未选中的配方，需对照启用条件逐个筛选。
 
