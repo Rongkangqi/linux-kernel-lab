@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 424" width="760" height="424" role="img" aria-labelledby="title desc">
+<title id="title">中断发生后，任务何时恢复？</title><desc id="desc">两列用各自系统的时钟取证。先对齐事件含义，再比较等待区间。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="424" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">中断发生后，任务何时恢复？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">两列用各自系统的时钟取证。先对齐事件含义，再比较等待区间。</text>
+<text x="198" y="117" font-size="19" font-weight="670" fill="#435b94" text-anchor="middle">Linux 外设请求</text>
+<text x="565" y="117" font-size="19" font-weight="670" fill="#4e7543" text-anchor="middle">FreeRTOS 任务通知</text>
+<rect x="33" y="134" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进入 IRQ 处理</text><text x="198" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">确认设备状态或安排后续工作</text>
+<rect x="397" y="134" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进入 ISR</text><text x="562" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">记录计数器与事件序号</text>
+<path d="M198 200 L198 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 200 L562 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="220" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">等待者变为可运行</text><text x="198" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">检查 sched_wakeup 的 TID</text>
+<rect x="397" y="220" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">提交任务通知</text><text x="562" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">核对任务是否从等待变为就绪</text>
+<path d="M198 286 L198 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 286 L562 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="306" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">调度器切入任务</text><text x="198" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">检查 sched_switch 的 next_pid</text>
+<rect x="397" y="306" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">目标任务获得 CPU</text><text x="562" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">读取同一时基的第二个时间戳</text></g>
+</svg>

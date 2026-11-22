@@ -46,6 +46,10 @@ grep -E '/dev/|ioctl\(' one.trace | head -n 40
 
 ## 第三步：连接缓冲区与完成
 
+[![媒体设备和 CPU 访问缓冲区的不同路径](figures/dma-views.svg)](figures/dma-views.svg)
+
+在图上标出谁正在写帧。再从驱动查完成事件，确定另一个使用者何时可以读或复用这块内存。
+
 沿[L07](lab-dma.md)确认导入/分配、DMA-BUF attach/map、设备地址、提交、完成、同步和回收。格式、stride、对齐、压缩布局等都可能影响数据解释，不能仅凭“同一 buffer fd”推导所有内容布局。
 
 查可用 trace 事件，优先使用已有调度/IRQ/驱动事件。驱动没有现成 tracepoint 时，先通过源码和低开销日志建立边界，是否加入最小 tracepoint 作为后续独立变更评估。保留无插桩基线。

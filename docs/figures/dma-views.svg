@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 307" width="760" height="307" role="img" aria-labelledby="title desc">
+<title id="title">同一个缓冲区的两条访问路径</title><desc id="desc">示意一块已正确映射的缓冲区。地址转换和访问完成需要分别取证。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="307" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">同一个缓冲区的两条访问路径</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">示意一块已正确映射的缓冲区。地址转换和访问完成需要分别取证。</text>
+<rect x="26" y="105" width="190" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="121" y="139.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">CPU 虚拟地址</text>
+<rect x="282" y="105" width="196" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="380" y="139.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">CPU 页表</text>
+<path d="M217 134 L280 134" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="26" y="195" width="190" height="57" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="121" y="229.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">设备 DMA 地址</text>
+<rect x="282" y="195" width="196" height="57" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="380" y="229.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">设备侧映射</text>
+<path d="M217 224 L280 224" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="553" y="146" width="176" height="69" rx="9" fill="#fff4db" stroke="#956a23"/><text x="641" y="178.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">缓冲区内存</text><text x="641" y="202.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">物理存储</text>
+<path d="M479 134 L551 163" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M479 224 L551 197" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="30" y="283" font-size="16" font-weight="450" fill="#1c293e" text-anchor="start">启用 IOMMU 时，设备侧可经过 IOMMU 翻译；完成或交还由驱动同步协议确认。</text></g>
+</svg>

@@ -14,6 +14,10 @@
 
 ## 第 38 周测量响应
 
+[![FreeRTOS 从中断通知到任务恢复](figures/irq-task.svg)](figures/irq-task.svg)
+
+沿右列标出两次读取计数器的位置，再和左列的唤醒、调度事件对照。
+
 让接收任务用 `ulTaskNotifyTake` 等待通知。若 SDK 支持且回调确实处在可调用内核的 ISR 中，可在回调里记录计数并调用 `vTaskNotifyGiveFromISR`。按该移植的示例处理“更高优先级任务被唤醒”的标记。尽量使每次触发间隔足够长，先让前一次通知消费完成。任务醒来后记录读取到的通知值。成批到达时，通知取值的清零或递减语义会影响一次唤醒对应几个事件。[FreeRTOS 任务通知与等待语义](https://www.freertos.org/Documentation/02-Kernel/04-API-references/05-Direct-to-task-notifications/03-ulTaskNotifyTake)
 
 先用同一时钟记录 ISR 和任务两个时间点，然后增加一个已知优先级、运行时间有限的任务，重复采样。两次使用相同外设、输入和周期。在采集结束后统一输出日志，避免同步串口打印扰动被测时段。分辨率仅为一个 tick 时，报告相同 tick 或相差几个 tick，并解释这对精度的限制。

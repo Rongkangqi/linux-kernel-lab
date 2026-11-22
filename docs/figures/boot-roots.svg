@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 424" width="760" height="424" role="img" aria-labelledby="title desc">
+<title id="title">运行一个新程序，还是从新根启动？</title><desc id="desc">从上到下读每条路径，最后找出哪一步能够证明新用户空间已接管启动。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="424" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">运行一个新程序，还是从新根启动？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">从上到下读每条路径，最后找出哪一步能够证明新用户空间已接管启动。</text>
+<text x="198" y="117" font-size="19" font-weight="670" fill="#435b94" text-anchor="middle">在工作镜像中 chroot</text>
+<text x="565" y="117" font-size="19" font-weight="670" fill="#4e7543" text-anchor="middle">从独立介质启动</text>
+<rect x="33" y="134" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">板上原内核已经运行</text><text x="198" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">保留原有 PID 1</text>
+<rect x="397" y="134" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">固件装入内核与 DTB</text><text x="562" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">引导参数指定根设备</text>
+<path d="M198 200 L198 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 200 L562 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="220" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">改变子进程查找文件的根</text><text x="198" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">进入解包的 rootfs</text>
+<rect x="397" y="220" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">内核取得所选的根</text><text x="562" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">系统可能先经过 initramfs</text>
+<path d="M198 286 L198 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 286 L562 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="306" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">运行新 BusyBox</text><text x="198" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">核对架构和动态加载器</text>
+<rect x="397" y="306" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进入新用户空间的 init</text><text x="562" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">核对根挂载、标记和 PID 1</text></g>
+</svg>

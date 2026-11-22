@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 449" width="760" height="449" role="img" aria-labelledby="title desc">
+<title id="title">两次加一，怎样只留下一个 1？</title><desc id="desc">L03 的拆分版本用原子 load / store 和屏障安排下面的交错；初始值为 0。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="449" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">两次加一，怎样只留下一个 1？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">L03 的拆分版本用原子 load / store 和屏障安排下面的交错；初始值为 0。</text>
+<text x="198" y="117" font-size="19" font-weight="670" fill="#435b94" text-anchor="middle">线程 A</text>
+<text x="565" y="117" font-size="19" font-weight="670" fill="#4e7543" text-anchor="middle">线程 B</text>
+<rect x="33" y="134" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">读取 0</text><text x="198" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">保存在 A 的局部变量</text>
+<rect x="397" y="134" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="164.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">读取 0</text><text x="562" y="188.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">保存在 B 的局部变量</text>
+<path d="M198 200 L198 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 200 L562 218" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="220" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">计算 0 + 1</text><text x="198" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">局部结果为 1</text>
+<rect x="397" y="220" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="250.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">计算 0 + 1</text><text x="562" y="274.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">局部结果为 1</text>
+<path d="M198 286 L198 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M562 286 L562 304" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="33" y="306" width="330" height="65" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="198" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">写回 1</text><text x="198" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">先后写入均可</text>
+<rect x="397" y="306" width="330" height="65" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="562" y="336.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">写回 1</text><text x="562" y="360.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">共享计数最终仍是 1</text>
+<text x="34" y="409" font-size="16" font-weight="450" fill="#1c293e" text-anchor="start">换成两次 atomic_fetch_add 后，第二次会在第一次更新后的值上再加一。</text></g>
+</svg>

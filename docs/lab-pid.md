@@ -70,6 +70,10 @@ wait "$pid"
 
 ## 实测记录：为什么三个 PID 都是 2754？
 
+[![三个不同 TID 同属 TGID 2754](figures/thread-group.svg)](figures/thread-group.svg)
+
+先沿 worker-a 向上找进程号，再用它自己的 TID 向下找 `/proc/2754/task/2756/status`。同一个线程，两条查找路径各回答一个问题。
+
 下表整理自一次实际的 Ubuntu 终端记录。每行左边是程序打印的值，右边是同一次运行中 `ps -L -p "$pid" -o pid,tid,stat,comm` 的结果。下次实验使用当次的 `$pid` 即可。
 
 | 线程 | 程序 `getpid()` | 程序 `gettid()` | `ps` 的 PID | `ps` 的 TID | `ps` 的 STAT |

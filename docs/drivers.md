@@ -42,6 +42,10 @@ done
 
 ## 第 22 周：DMA 与地址
 
+[![CPU 与设备分别映射同一缓冲区](figures/dma-views.svg)](figures/dma-views.svg)
+
+先用手指分别沿 CPU、设备两条箭头走一遍，再为目标驱动的每个地址标出使用者。
+
 完成[L07](lab-dma.md)。把 CPU 虚拟地址、CPU 物理地址、设备 DMA 地址分别画出。IOMMU 存在并被使用时可提供设备侧地址转换；**DMA 地址不能普遍假设等于物理地址**。
 
 比较 coherent 分配与 streaming mapping，标出 DMA 方向、mapping error、CPU/设备所有权转换与 unmap。Cache coherent 也不消除所有顺序要求。依据：[Linux DMA 指南](https://docs.kernel.org/core-api/dma-api-howto.html)。

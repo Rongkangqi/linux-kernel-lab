@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270" width="760" height="270" role="img" aria-labelledby="title desc">
+<title id="title">从睡眠到重新获得 CPU</title><desc id="desc">以同一读线程、同一时钟为例。三个区间的数字是用于手算的教学数据。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="270" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">从睡眠到重新获得 CPU</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">以同一读线程、同一时钟为例。三个区间的数字是用于手算的教学数据。</text>
+<rect x="29" y="126" width="268" height="69" rx="9" fill="#f1f3f7" stroke="#647185"/><text x="163" y="158.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">阻塞 · 等待数据</text><text x="163" y="182.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">8 ms</text>
+<rect x="300" y="126" width="223" height="69" rx="9" fill="#fff4db" stroke="#956a23"/><text x="411.5" y="158.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">可运行 · 等 CPU</text><text x="411.5" y="182.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">3 ms</text>
+<rect x="526" y="126" width="204" height="69" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="628" y="158.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">恢复并返回</text><text x="628" y="182.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">1 ms</text>
+<text x="29" y="112" font-size="17" font-weight="650" fill="#1c293e" text-anchor="start">10 ms</text>
+<text x="300" y="112" font-size="17" font-weight="650" fill="#1c293e" text-anchor="start">18 ms</text>
+<text x="526" y="112" font-size="17" font-weight="650" fill="#1c293e" text-anchor="start">21 ms</text>
+<text x="730" y="112" font-size="17" font-weight="650" fill="#1c293e" text-anchor="end">22 ms</text>
+<text x="29" y="224" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">切出</text>
+<text x="300" y="224" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">sched_wakeup</text>
+<text x="526" y="224" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">sched_switch 切入</text></g>
+</svg>

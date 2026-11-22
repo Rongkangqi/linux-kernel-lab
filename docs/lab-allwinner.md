@@ -41,6 +41,10 @@ trace-cmd report > active-trace.txt
 
 ## 把记录读成时间线
 
+[![Linux 与 FreeRTOS 的中断、就绪、执行对照](figures/irq-task.svg)](figures/irq-task.svg)
+
+纵向看同一个系统：通知与任务获得 CPU 是两个采样点。横向比较时，先确认两侧的起点和终点各指什么。
+
 下面是简化的 Linux 教学样例，假定时钟可跨 CPU 比较，且驱动路径和同一笔输入的对应关系已经核实。时间以秒为单位，任务的 PID 是 42。
 
 | 时间 | 记录事件的 CPU | 事件和关键字段 |

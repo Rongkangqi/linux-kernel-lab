@@ -1269,3 +1269,23 @@ dialog::backdrop {
 .hero h1 span {
   color:#d1f3a4;
 }
+.prose a:has(> img) {
+  display: block;
+  overflow-x: auto;
+  background: #f9fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.prose a > img {
+  display: block;
+  width: 100%;
+  min-width: 590px;
+  height: auto;
+}
+@media (max-width: 720px) {
+  .prose p:has(> a > img)::after {
+    content: "左右滑动查看全图 · 点图可单独打开";
+    font-size: .82rem;
+    color: var(--muted);
+  }
+}

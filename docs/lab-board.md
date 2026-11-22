@@ -30,6 +30,10 @@ dtc -I fs -O dts /sys/firmware/devicetree/base > running-board.dts
 
 ## 选择一个设备建立证据链
 
+[![板级设备树、sysfs 绑定与板上用例的证据链](figures/rk-device.svg)](figures/rk-device.svg)
+
+如果只在设备树里找到了节点，先填左边一格。等取得驱动链接和业务结果，再填写另外两格。
+
 1. 找到 DT 节点和 `compatible`；
 2. 通过 `/sys/bus/platform/devices/` 等对应总线确认设备与 driver 链接；
 3. 在对应 BSP 的匹配表中找到字符串；

@@ -80,6 +80,10 @@ cat block.trace poll.trace
 
 ## 回到对象关系
 
+[![dup 与重新打开文件时的偏移归属](figures/shared-offset.svg)](figures/shared-offset.svg)
+
+图中 ABCDE 是演算用的文件。把字母换成本实验的内容，沿相同箭头就能预测交替读取的结果。
+
 画 fd 表、file 对象与 file_operations，解释普通文件、socket、设备节点分别连接到什么实现。通过 `dup` 验证同一打开文件描述的偏移共享：原 fd 读一字节，再用副本读，预测第二次读的位置。
 
 ```python

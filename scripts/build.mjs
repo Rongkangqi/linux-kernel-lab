@@ -10,7 +10,10 @@ for (const entry of manifest) {
   const toc = [];
   const renderer = new marked.Renderer();
   const baseLink = renderer.link.bind(renderer);
-  renderer.link = token => baseLink({ ...token, href: /^[\w-]+\.md$/.test(token.href) ? `#/docs/${token.href.slice(0,-3)}` : token.href });
+  const baseImage = renderer.image.bind(renderer);
+  const assetPath = href => /^figures\/[\w-]+\.svg$/.test(href) ? `./docs/${href}` : href;
+  renderer.link = token => baseLink({ ...token, href: /^[\w-]+\.md$/.test(token.href) ? `#/docs/${token.href.slice(0,-3)}` : assetPath(token.href) });
+  renderer.image = token => baseImage({ ...token, href: assetPath(token.href) });
   renderer.heading = ({ tokens, depth, text }) => {
     const id = `section-${++count}`;
     if (depth === 2 || depth === 3) toc.push({ id, depth, title: text.replace(/[`*_]/g, '') });

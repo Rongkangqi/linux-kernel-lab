@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 306" width="760" height="306" role="img" aria-labelledby="title desc">
+<title id="title">一次运行里的三个线程</title><desc id="desc">先看共同的组号，再看每个可以单独被调度的任务。数字取自 L01 的 Ubuntu 记录。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="306" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">一次运行里的三个线程</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">先看共同的组号，再看每个可以单独被调度的任务。数字取自 L01 的 Ubuntu 记录。</text>
+<rect x="201" y="99" width="358" height="61" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="380" y="135.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进程 PID = TGID = 2754</text>
+<path d="M380 160 L380 174 L138 174 L138 188" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M380 160 L380 174 L380 174 L380 188" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M380 160 L380 174 L622 174 L622 188" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="28" y="191" width="220" height="64" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="138" y="221" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">main</text><text x="138" y="245" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">TID 2754</text>
+<rect x="270" y="191" width="220" height="64" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="380" y="221" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">worker-a</text><text x="380" y="245" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">TID 2756</text>
+<rect x="512" y="191" width="220" height="64" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="622" y="221" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">worker-b</text><text x="622" y="245" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">TID 2757</text>
+<text x="30" y="286" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">逐一打开 /proc/2754/task/&lt;TID&gt;/status：Tgid 相同，Pid 对应该列线程。</text></g>
+</svg>

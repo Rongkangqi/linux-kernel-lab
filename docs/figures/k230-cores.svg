@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 310" width="760" height="310" role="img" aria-labelledby="title desc">
+<title id="title">同一颗 K230，两个软件环境</title><desc id="desc">这里画的是经典 SDK 的 Linux + RT-Smart 配置。切换镜像后要重新查核。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="310" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">同一颗 K230，两个软件环境</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">这里画的是经典 SDK 的 Linux + RT-Smart 配置。切换镜像后要重新查核。</text>
+<rect x="208" y="100" width="344" height="55" rx="9" fill="#f1f3f7" stroke="#647185"/><text x="380" y="133.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">板级配置与镜像打包规则</text>
+<path d="M380 155 L380 176 L193 176 L193 196" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M380 155 L380 176 L566 176 L566 196" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="34" y="198" width="318" height="68" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="193" y="230" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">小核 · Linux</text><text x="193" y="254" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">用 /sys 查 Linux 在线 CPU</text>
+<rect x="406" y="198" width="318" height="68" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="565" y="230" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">大核 · RT-Smart</text><text x="565" y="254" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">从实时侧启动日志确认</text>
+<text x="32" y="292" font-size="16" font-weight="450" fill="#1c293e" text-anchor="start">Linux 的在线 CPU 列表描述它能调度的核。验证两侧协作要核对双方的消息。</text></g>
+</svg>

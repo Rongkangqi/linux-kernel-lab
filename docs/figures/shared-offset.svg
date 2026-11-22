@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 390" width="760" height="390" role="img" aria-labelledby="title desc">
+<title id="title">三个 fd 为什么依次读出 A、B、A？</title><desc id="desc">沿箭头找到真正保存当前位置的打开文件描述。输入文件内容为 ABCDE。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="390" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">三个 fd 为什么依次读出 A、B、A？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">沿箭头找到真正保存当前位置的打开文件描述。输入文件内容为 ABCDE。</text>
+<rect x="30" y="107" width="116" height="54" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="88" y="140" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">fd 3</text>
+<rect x="30" y="197" width="116" height="54" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="88" y="230" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">fd 4</text>
+<rect x="30" y="287" width="116" height="54" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="88" y="320" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">fd 5</text>
+<rect x="235" y="133" width="240" height="74" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="355" y="168" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">打开文件描述甲</text><text x="355" y="192" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">偏移 0 → 1 → 2</text>
+<rect x="235" y="274" width="240" height="74" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="355" y="309" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">打开文件描述乙</text><text x="355" y="333" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">偏移 0 → 1</text>
+<rect x="553" y="187" width="176" height="77" rx="9" fill="#fff4db" stroke="#956a23"/><text x="641" y="223.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">同一 inode</text><text x="641" y="247.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">同一文件内容</text>
+<path d="M147 134 L233 155" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M147 225 L233 187" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M147 314 L233 312" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M476 164 L551 206" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M476 310 L551 247" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="32" y="374" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">fd 4 由 fd 3 复制。fd 5 来自再次打开同一个文件。</text></g>
+</svg>

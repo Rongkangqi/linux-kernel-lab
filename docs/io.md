@@ -10,6 +10,10 @@
 
 ### 用三个 fd 测出一个共享偏移
 
+[![fd 3 和 fd 4 共用偏移，独立打开的 fd 5 单独计数](figures/shared-offset.svg)](figures/shared-offset.svg)
+
+从 fd 3 读完 A 后，在甲的框里把偏移改为 1，再沿 fd 4 的箭头看它将读到哪个字符。
+
 在 Linux shell 中运行。`mktemp` 创建自己的临时文件，`dd` 每次从标准输入读一个字节。输出的三个字符之间没有换行，最后的 `printf` 统一换行。
 
 ```bash

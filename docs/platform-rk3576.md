@@ -36,6 +36,10 @@ cat /sys/devices/system/cpu/online
 
 ## 六条阅读线
 
+[![RK3576 外设的描述、驱动绑定与实际传输三步验证](figures/rk-device.svg)](figures/rk-device.svg)
+
+先选手中板子上一个已经工作的外设。为图里的三个框各找一份证据，再沿与该外设有关的中断、时钟和供电线展开。
+
 1. **CPU 与调度：** 核心拓扑、capacity、频率和热管理如何影响任务放置。
 2. **内存：** CPU VA/PA、DDR、缓存一致性与设备 DMA 地址如何连接。
 3. **中断：** 设备事件如何经控制器进入 CPU，怎样唤醒等待者。

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" width="760" height="330" role="img" aria-labelledby="title desc">
+<title id="title">共享区最后还能放下多少字节？</title><desc id="desc">教学算例：区域从 0x41000000 开始，长度为 0x10000。下图放大末尾。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="330" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">共享区最后还能放下多少字节？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">教学算例：区域从 0x41000000 开始，长度为 0x10000。下图放大末尾。</text>
+<text x="30" y="120" font-size="16" font-weight="650" fill="#1c293e" text-anchor="start">偏移</text>
+<text x="157" y="123" font-size="18" font-weight="650" fill="#1c293e" text-anchor="start">0xfff0</text>
+<text x="431" y="123" font-size="18" font-weight="650" fill="#1c293e" text-anchor="start">0x10000</text>
+<rect x="34" y="142" width="114" height="56" rx="9" fill="#f1f3f7" stroke="#647185"/><text x="91" y="176" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">…</text>
+<rect x="155" y="142" width="270" height="56" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="290" y="176" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">区内最后 16 字节</text>
+<rect x="432" y="142" width="291" height="56" rx="9" fill="#fff4db" stroke="#956a23"/><text x="577.5" y="176" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">已超出保留区</text>
+<path d="M157 230 L713 230" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="159" y="258" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">从 0xfff0 起写 32 字节：前 16 字节在区内，后 16 字节越界。</text>
+<text x="33" y="302" font-size="16" font-weight="450" fill="#1c293e" text-anchor="start">边界判定：偏移 + 长度 ≤ 区域长度。实际共享区的位置和大小要从两侧配置核实。</text></g>
+</svg>

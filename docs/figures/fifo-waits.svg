@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 505" width="760" height="505" role="img" aria-labelledby="title desc">
+<title id="title">一个 FIFO，两段等待</title><desc id="desc">时间从上向下。先沿读者一列看系统调用，再横向找解除等待的动作。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="505" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">一个 FIFO，两段等待</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">时间从上向下。先沿读者一列看系统调用，再横向找解除等待的动作。</text>
+<text x="82" y="114" font-size="17" font-weight="650" fill="#1c293e" text-anchor="start">时刻</text>
+<text x="304" y="114" font-size="19" font-weight="650" fill="#415fa0" text-anchor="middle">终端 A · 读者</text>
+<text x="590" y="114" font-size="19" font-weight="650" fill="#537848" text-anchor="middle">终端 B · 写者</text>
+<rect x="169" y="132" width="253" height="63" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="295.5" y="161.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进入 openat</text><text x="295.5" y="185.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">O_RDONLY，等写端</text>
+<rect x="461" y="132" width="253" height="63" rx="9" fill="#f1f3f7" stroke="#647185"/><text x="587.5" y="169.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">尚未打开 FIFO</text>
+<text x="48" y="171" font-size="21" font-weight="650" fill="#1c293e" text-anchor="start">t₀</text>
+<path d="M294 196 L294 217" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="169" y="220" width="253" height="61" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="295.5" y="248.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">openat 返回 fd</text><text x="295.5" y="272.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">打印 opened</text>
+<rect x="461" y="220" width="253" height="61" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="587.5" y="248.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">打开写端</text><text x="587.5" y="272.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">O_WRONLY</text>
+<path d="M459 249 L424 249" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="48" y="258" font-size="21" font-weight="650" fill="#1c293e" text-anchor="start">t₁</text>
+<path d="M294 282 L294 303" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M588 282 L588 303" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="169" y="306" width="253" height="61" rx="9" fill="#fff4db" stroke="#956a23"/><text x="295.5" y="334.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">进入 read</text><text x="295.5" y="358.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">缓冲区为空，等数据</text>
+<rect x="461" y="306" width="253" height="61" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="587.5" y="334.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">sleep(8)</text><text x="587.5" y="358.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">写端仍然打开</text>
+<path d="M294 368 L294 389" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M588 368 L588 389" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<rect x="169" y="392" width="253" height="61" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="295.5" y="420.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">read 返回 6</text><text x="295.5" y="444.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">接着关闭读端</text>
+<rect x="461" y="392" width="253" height="61" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="587.5" y="420.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">写入 6 字节</text><text x="587.5" y="444.5" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">hello 加换行</text>
+<path d="M459 423 L424 423" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="31" y="432" font-size="17" font-weight="600" fill="#1c293e" text-anchor="start">t₁ + 约 8 s</text>
+<text x="32" y="486" font-size="17" font-weight="450" fill="#1c293e" text-anchor="start">A 最早等写端打开；得到 fd 后才开始等数据。B 稍后关闭写端。</text></g>
+</svg>

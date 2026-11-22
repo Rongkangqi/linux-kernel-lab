@@ -4,6 +4,10 @@
 
 ## 从镜像规则预测运行位置
 
+[![K230 双系统镜像分工](figures/k230-cores.svg)](figures/k230-cores.svg)
+
+回到所选 SDK 的打包目标，为两个分支各写出所用 payload；若镜像配置不同，应重画这一层。
+
 在经典 SDK 中读顶层 Makefile 和所选配置，查找 `little-core-opensbi`、`big-core-opensbi`、镜像打包规则。记录它们的输入文件、payload 和启用条件。对每个核预测最早能观察到的固件标识和系统入口。使用其他 SDK 时从其打包脚本重新建表。[经典 SDK 构建规则](https://github.com/kendryte/k230_sdk/blob/main/Makefile)
 
 ## 在 Linux 控制台核对

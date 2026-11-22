@@ -24,6 +24,10 @@
 
 ## 第 17 周：MMU 与 TLB
 
+[![合法匿名页的首次写入与异常返回](figures/trap-path.svg)](figures/trap-path.svg)
+
+沿 ARM64 一侧追到通用处理，再回到同一条用户指令。对照 K230 时，替换上半段的架构入口。
+
 学习页粒度、VA/PA、页表项权限与属性、TTBR、TCR、MAIR 的职责。先按选定配置推演一条 VA 的索引与偏移，再核对实际页大小和地址位数；不能默认所有 ARM64 系统都是 4KB 页和相同页表层数。
 
 MMU 执行地址转换与权限检查，TLB 缓存转换结果。修改页表后的同步与 TLB 维护有架构规则；TLB miss 和 page fault 不是同义词。源码入口：`arch/arm64/mm/`、`arch/arm64/include/asm/pgtable*.h`。

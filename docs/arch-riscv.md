@@ -15,6 +15,10 @@
 
 ## 沿一次匿名写缺页阅读源码
 
+[![ARM64 与 RISC-V 缺页处理汇合到 Linux 内存管理](figures/trap-path.svg)](figures/trap-path.svg)
+
+上方分叉是架构相关异常入口。先确定访问地址及类型，再沿下方公共路径核对映射权限。
+
 在固定版本里，从 `arch/arm64/mm/fault.c` 和 `arch/riscv/mm/fault.c` 找当前版本的页错误处理路径。标出异常原因如何解码、VMA 权限在哪里判定、哪一步进入 `handle_mm_fault`，以及处理成功后如何回到发生异常的指令。交付两条调用链，每条都注明提交和文件位置。[Linux v6.12 ARM64](https://github.com/torvalds/linux/blob/v6.12/arch/arm64/mm/fault.c) · [Linux v6.12 RISC-V](https://github.com/torvalds/linux/blob/v6.12/arch/riscv/mm/fault.c)
 
 ## 手解一次 store page fault

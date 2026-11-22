@@ -45,6 +45,10 @@ sudo chroot "$labroot" /bin/busybox uname -r
 
 ## 验证真实启动
 
+[![根目录切换与从独立介质启动的对照](figures/boot-roots.svg)](figures/boot-roots.svg)
+
+把刚做完的 chroot 实验填在左列，再沿右列逐项寻找引导参数、根挂载和 PID 1。
+
 从板厂文档找出本板对独立 SD 卡、USB 或网络根文件系统的支持，保留原有启动项和可恢复镜像。使用同一套内核与 DTB，为独立介质准备根文件系统，并按板级流程选取根设备。通过串口保存内核寻找 root、执行 init、出现控制台的日志。用 `cat /proc/cmdline`、`cat /proc/mounts` 和 `readlink /proc/1/exe` 核实启动结果。一些 BSP 需要外部模块或固件，复用时匹配内核 release 和实际提交。
 
 ## 交付与判据

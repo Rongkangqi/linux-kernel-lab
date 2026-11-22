@@ -25,6 +25,10 @@ rg -n 'sg_dma_(address|len)\(|sdhci_adma_table_pre|COOKIE_PRE_MAPPED' "$f"
 
 ## 画两个地址视角
 
+[![CPU 地址与 DMA 地址的访问者和转换](figures/dma-views.svg)](figures/dma-views.svg)
+
+查驱动中的映射调用：返回给设备的地址填入下方，CPU 访问缓冲区使用的指针填入上方。
+
 CPU 使用虚拟地址，经 CPU MMU 到物理地址；设备使用 DMA 地址，可能经 IOMMU 到物理内存。IOMMU 不存在或旁路时也不能不经 API 就假设总线地址等于 CPU 物理地址。具体关系由平台决定。
 
 对每个变量标注类型：`void *`、`phys_addr_t`、`dma_addr_t`、sg_table、用户态指针或 fd。不要把 fd 当内存地址，不用 `virt_to_phys` 绕过 DMA API 的要求。

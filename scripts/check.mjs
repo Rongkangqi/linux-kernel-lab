@@ -19,6 +19,11 @@ for(const p of built.pages){
   assert(p.html.length>500,`Empty or placeholder document: ${p.id}`);
   assert(p.toc.length>=3,`Missing document structure: ${p.id}`);
   const markdown=await read(p.source);
+  for (const [, figure] of markdown.matchAll(/!\[[^\]]+\]\((figures\/[\w-]+\.svg)\)/g)) {
+    const asset = `docs/${figure}`;
+    assert.equal(await read(`dist/${asset}`), await read(asset), `Missing or stale diagram: ${asset}`);
+    assert(p.html.includes(`src="./${asset}"`) && p.html.includes(`href="./${asset}"`), `Broken diagram route: ${p.id} → ${asset}`);
+  }
   assert.equal(await read(`dist/${p.source}`),markdown,`Downloadable Markdown is missing or stale: ${p.id}`);
   assert.equal((markdown.match(/^```/gm)||[]).length%2,0,`Unclosed code fence: ${p.id}`);
   assert(!/C:\\Users\\|token=|password=/i.test(markdown),`Private environment detail in ${p.id}`);

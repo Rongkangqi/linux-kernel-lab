@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 392" width="760" height="392" role="img" aria-labelledby="title desc">
+<title id="title">写时复制：子进程写一页，改变了什么？</title><desc id="desc">只画一个虚拟页 P。父子各有自己的页表，框内编号代表物理页。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#50617a"/></marker></defs>
+<rect width="760" height="392" rx="12" fill="#f9fafc"/>
+<g font-family="system-ui, Microsoft YaHei, PingFang SC, sans-serif"><text x="28" y="43" font-size="26" font-weight="690" fill="#1c293e" text-anchor="start">写时复制：子进程写一页，改变了什么？</text><text x="28" y="73" font-size="17" font-weight="440" fill="#515e72" text-anchor="start">只画一个虚拟页 P。父子各有自己的页表，框内编号代表物理页。</text>
+<text x="32" y="121" font-size="20" font-weight="650" fill="#1c293e" text-anchor="start">刚 fork</text>
+<rect x="169" y="97" width="194" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="266" y="131.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">父：P</text>
+<rect x="169" y="168" width="194" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="266" y="202.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">子：P</text>
+<rect x="482" y="129" width="222" height="64" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="593" y="159" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">物理页 A</text><text x="593" y="183" font-size="16" font-weight="410" fill="#39495d" text-anchor="middle">共享 · 写保护</text>
+<path d="M364 128 L480 146" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M364 198 L480 178" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<text x="32" y="268" font-size="20" font-weight="650" fill="#1c293e" text-anchor="start">子写入后</text>
+<rect x="169" y="243" width="194" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="266" y="277.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">父：P</text>
+<rect x="169" y="310" width="194" height="57" rx="9" fill="#edf2ff" stroke="#516cb1"/><text x="266" y="344.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">子：P</text>
+<rect x="482" y="241" width="222" height="57" rx="9" fill="#edf7e8" stroke="#497a47"/><text x="593" y="275.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">原页 A</text>
+<rect x="482" y="308" width="222" height="57" rx="9" fill="#fff4db" stroke="#956a23"/><text x="593" y="342.5" font-size="20" font-weight="620" fill="#172538" text-anchor="middle">私有副本 B</text>
+<path d="M365 271 L480 271" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/>
+<path d="M365 339 L480 339" fill="none" stroke="#50617a" stroke-width="2.3" marker-end="url(#arrow)"/></g>
+</svg>

@@ -4,6 +4,10 @@
 
 ## 第 2 周：任务与资源
 
+[![线程组和三个独立 task](figures/thread-group.svg)](figures/thread-group.svg)
+
+组号帮助你把线程归在一起；追 `sched_switch` 时，使用具体线程的 TID。
+
 Linux 中每个线程对应一个 `task_struct`。同一线程组的线程在常见用户 API 里看到相同的 PID（TGID），但各自有独立 TID。主线程通常满足 TID = TGID。标识与 PID namespace 有关，不能不加上下文地把内核字段数值当用户可见 ID。
 
 用[L01](lab-pid.md)建立直觉，再画出 task 与地址空间、文件表、信号相关对象的关系。线程之间共享什么由创建方式决定；“线程轻量”不能代替资源共享分析。
@@ -33,6 +37,10 @@ Linux 中每个线程对应一个 `task_struct`。同一线程组的线程在常
 源码入口：`fs/pipe.c`、`include/linux/wait.h`、`kernel/sched/wait.c`。画出 `read → 条件不满足 → 等待 → write 发布数据 → 唤醒 → 再调度 → read 返回`；再增加 EOF、信号、非阻塞条件。
 
 ## 算一算读线程到底在等什么
+
+[![等待数据、等待 CPU、恢复系统调用三个区间](figures/sched-time.svg)](figures/sched-time.svg)
+
+看 18 ms 到 21 ms 之间的区间。即使写者已经送来数据，读线程也仍可能排队。
 
 在板上开一个终端，运行下面的命令。`$!` 是刚启动的后台任务 PID。读 `status` 时，`sleep` 通常已经处于 `S`（可中断睡眠），`voluntary_ctxt_switches` 记录任务自愿交出 CPU 的累计次数。一次采样也可能撞上启动窗口，重复运行核对。
 
