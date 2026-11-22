@@ -2,7 +2,7 @@
 
 从 WSL2 上的 Linux 基础实验，到 ARM64 架构，再到 RK3576 实机分析的中文学习文档站。
 
-**在线阅读：[Linux Kernel Lab](https://rongkangqi-linux-kernel-lab.almond-loach-8644.chatgpt.site)**
+**在 GitHub 上开始学习**　[第 1 周指南](docs/start.md) · [32 周计划](docs/roadmap.md) · [全部课程文档](docs/) · [仓库 Wiki](https://github.com/Rongkangqi/linux-kernel-lab/wiki)
 
 ## 学习路线
 
@@ -18,7 +18,7 @@
 8. RK3576 SoC、BSP、时钟电源与 RK3588 对照（第 24–27 周）
 9. 端到端分析与综合答辩（第 28–32 周）
 
-站点包含 29 篇文档、9 份实验手册、全文搜索、移动端导航、浏览器进度保存与 JSON 导入/导出。进度不上传服务器。
+仓库收录 29 篇课程文档，其中有 9 份实验手册。在 GitHub 阅读时，可用[实验记录模板](docs/notebook.md)保存自己的进度。下方的本地网页阅读器还支持全文搜索和学习进度导出。
 
 ## 从哪里开始
 
