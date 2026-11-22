@@ -2,7 +2,9 @@
 
 从 WSL2 上的 Linux 基础实验，到 ARM64 架构，再到 RK3576 实机分析的中文学习文档站。
 
-**在 GitHub 上开始学习**　[第 1 周指南](docs/start.md) · [32 周计划](docs/roadmap.md) · [全部课程文档](docs/) · [仓库 Wiki](https://github.com/Rongkangqi/linux-kernel-lab/wiki)
+**在线学习**　[打开 Linux Kernel Lab](https://rongkangqi.github.io/linux-kernel-lab/) · [32 周完整路线](https://rongkangqi.github.io/linux-kernel-lab/#/docs/roadmap) · [第一个实验](https://rongkangqi.github.io/linux-kernel-lab/#/docs/lab-pid)
+
+也可以在仓库内阅读 [Markdown 文档](docs/) 和 [Wiki](https://github.com/Rongkangqi/linux-kernel-lab/wiki)。
 
 ## 学习路线
 
@@ -32,6 +34,8 @@
 文档使用相对 Markdown 链接，可在 GitHub 直接阅读；构建时自动转换成站点路由。最终目标是能够用版本明确的源码、实验与 trace 解释常见内核机制，并连接到真实芯片；不以读完全部源码或掌握芯片 RTL 设计为目标。
 
 ## 本地构建
+
+网页通过 GitHub Pages 发布。仓库 Settings → Pages 中选择 GitHub Actions 后，每次推送到 `main` 都会构建、检查并发布 `dist/`。在 Actions 的发布工作流中也可以手动重新部署。
 
 需要 Node.js 20 或更新版本。首次执行 `npm ci`，之后：
 
