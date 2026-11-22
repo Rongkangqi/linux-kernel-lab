@@ -12,7 +12,7 @@
   {"id":"drivers","title":"06 · 设备与 DMA","group":"内核主线","summary":"DTS、probe、资源、IOMMU 与 DMA-BUF","kind":"stage","platform":"RK3576"},
   {"id":"rockchip","title":"07 · RK3576 板级开发","group":"内核主线","summary":"构建最小根文件系统，追踪时钟、电源和驱动","kind":"stage","platform":"RK3576"},
   {"id":"capstone","title":"08 · 综合项目与答辩","group":"内核主线","summary":"把提交、DMA、中断和唤醒串成证据链","kind":"stage","platform":"RK3576"},
-  {"id":"lab-pid","title":"L01 · 亲眼观察 PID / TID","group":"实验手册","summary":"用 C 线程程序和 /proc 建立任务模型","kind":"lab","platform":"RK3576 / WSL2","minutes":60,"targets":["RK3576","WSL2"]},
+  {"id":"lab-pid","title":"L01 · 亲眼观察 PID / TID","group":"实验手册","summary":"用一次 Ubuntu 实测对照 PID、TID 与 TGID，读懂 pthread 创建和回收线程的过程","kind":"lab","platform":"RK3576 / WSL2","minutes":60,"targets":["RK3576","WSL2"]},
   {"id":"lab-wait","title":"L02 · 一个 read 为什么睡眠","group":"实验手册","summary":"管道、阻塞、strace 与唤醒时间线","kind":"lab","platform":"RK3576 / WSL2","minutes":90,"targets":["RK3576","WSL2"]},
   {"id":"lab-lock","title":"L03 · 竞争条件与上下文","group":"实验手册","summary":"并发计数、锁选择与内核迁移分析","kind":"lab","platform":"RK3576 / WSL2","minutes":90,"targets":["RK3576","WSL2"]},
   {"id":"lab-memory","title":"L04 · 按需分配与 COW","group":"实验手册","summary":"mmap、触页、fork 与 smaps 观察","kind":"lab","platform":"RK3576 / WSL2","minutes":120,"targets":["RK3576","WSL2"]},
