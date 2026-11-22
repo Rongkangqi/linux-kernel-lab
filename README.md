@@ -1,26 +1,28 @@
 # Linux Kernel Lab · 内核学习实验室
 
-从 WSL2 上的 Linux 基础实验，到 ARM64 架构，再到 RK3576 实机分析的中文学习文档站。
+中文 Linux 内核与芯片开发学习站。从第一周起在 RK3576 上做实验，用 K230 对照 RISC-V，再到全志 V821、V861、F101 深入 Linux 与实时系统。
 
 **在线学习**　[打开 Linux Kernel Lab](https://rongkangqi.github.io/linux-kernel-lab/) · [32 周完整路线](https://rongkangqi.github.io/linux-kernel-lab/#/docs/roadmap) · [第一个实验](https://rongkangqi.github.io/linux-kernel-lab/#/docs/lab-pid)
 
-也可以在仓库内阅读 [Markdown 文档](docs/) 和 [Wiki](https://github.com/Rongkangqi/linux-kernel-lab/wiki)。
+也可以在仓库内阅读与网站同步的 [Markdown 文档](docs/)。
 
 ## 学习路线
 
-参考 32 周、每周 5–8 小时，以实验验收推进：
+主线 32 周，全志进阶 6 周，每周参考 5–8 小时，以实验验收推进：
 
 1. 实验环境与 C / 构建基础（第 1 周）
 2. 任务、线程、调度与等待唤醒（第 2–4 周）
 3. 中断、并发、锁与内存序（第 5–7 周）
 4. 地址空间、缺页、COW 与内存分配（第 8–11 周）
 5. VFS、页缓存、块层与 socket（第 12–14 周）
-6. ARM64 异常、启动、MMU/TLB、Cache、GIC/PSCI/SMP（第 15–19 周）
+6. RK3576 的 ARM64 异常、MMU 和多核，对照 K230 RISC-V 启动与缺页（第 15–19 周）
 7. 设备模型、设备树、资源管理与 DMA/IOMMU/DMA-BUF（第 20–23 周）
-8. RK3576 SoC、BSP、时钟电源与 RK3588 对照（第 24–27 周）
+8. RK3576 SoC、时钟电源与 Buildroot 最小系统（第 24–27 周）
 9. 端到端分析与综合答辩（第 28–32 周）
 
-仓库收录 29 篇课程文档，其中有 9 份实验手册。在 GitHub 阅读时，可用[实验记录模板](docs/notebook.md)保存自己的进度。下方的本地网页阅读器还支持全文搜索和学习进度导出。
+第 33–38 周接入 [V821](docs/platform-v821.md)、[V861](docs/platform-v861.md) 和 [F101](docs/platform-f101.md)。每个平台安排两周，以中断与任务时间线收尾。
+
+仓库收录 39 篇课程文档，其中有 13 份实验手册。在 GitHub 阅读时，可用[实验记录模板](docs/notebook.md)保存自己的进度。下方的本地网页阅读器还支持全文搜索和学习进度导出。
 
 ## 从哪里开始
 
@@ -29,6 +31,8 @@
 - [环境与版本](docs/environment.md)
 - [第一个实验：PID / TID](docs/lab-pid.md)
 - [RK3576 架构地图](docs/platform-rk3576.md)
+- [双架构缺页实验](docs/lab-fault.md)
+- [最小根文件系统](docs/lab-rootfs.md)
 - [综合项目标准](docs/capstone.md)
 
 文档使用相对 Markdown 链接，可在 GitHub 直接阅读；构建时自动转换成站点路由。最终目标是能够用版本明确的源码、实验与 trace 解释常见内核机制，并连接到真实芯片；不以读完全部源码或掌握芯片 RTL 设计为目标。

@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir, cp } from 'node:fs/promises';
 import { marked } from 'marked';
 const root = new URL('../', import.meta.url);
-const { stages, platforms } = JSON.parse(await readFile(new URL('content/curriculum.json', root), 'utf8'));
+const { stages, platforms, extensions } = JSON.parse(await readFile(new URL('content/curriculum.json', root), 'utf8'));
 const manifest = JSON.parse(await readFile(new URL('content/manifest.json', root), 'utf8'));
 const pages = [];
 for (const entry of manifest) {
@@ -22,6 +22,6 @@ for (const entry of manifest) {
 await mkdir(new URL('dist/', root), { recursive: true });
 await cp(new URL('web/', root), new URL('dist/', root), { recursive: true });
 await cp(new URL('docs/', root), new URL('dist/docs/', root), { recursive: true });
-await writeFile(new URL('dist/content.json', root), JSON.stringify({ stages, platforms, pages, updated: '2026-11-17' }));
+await writeFile(new URL('dist/content.json', root), JSON.stringify({ stages, platforms, extensions, pages, updated: '2026-11-22' }));
 await writeFile(new URL('dist/.nojekyll', root), '');
 console.log(`Built ${pages.length} learning documents, ${stages.length} stages and ${platforms.length} platform guides.`);

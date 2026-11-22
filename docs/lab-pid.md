@@ -1,6 +1,6 @@
 # L01 · 亲眼观察 PID / TID
 
-**环境：WSL2 / 任意常见 Linux · 约 60 分钟 · 前置：会编译 C。** 本实验不依赖 RK3576 特性。
+**环境：RK3576 或 WSL2 · 约 60 分钟 · 前置：会编译 C。** 本实验不依赖 RK3576 特性。
 
 ## 运行前先预测
 
@@ -48,9 +48,12 @@ int main(void)
 ```
 
 ```bash
+# 有板端编译器时在板上编译；已从 WSL 传入二进制时从下一行开始
 cc -Wall -Wextra -g -O0 -pthread pid_threads.c -o pid_threads
 ./pid_threads &
 pid=$!
+# 等程序打印三个线程标识，再采样；下面的短暂停顿方便手工观察。
+sleep 1
 ps -L -p "$pid" -o pid,tid,stat,comm
 ls "/proc/$pid/task"
 grep -E 'Name|State|Tgid|Pid|Threads' "/proc/$pid/status"

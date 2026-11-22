@@ -10,7 +10,10 @@ const ids = new Set(manifest.map(p=>p.id));
 assert.equal(ids.size,manifest.length,'Duplicate document IDs');
 assert.equal(built.pages.length,manifest.length,'Build omitted documents');
 assert.equal(built.stages.reduce((sum,s)=>sum+s.duration,0),32,'Week allocation is inconsistent');
-assert.equal(built.pages.filter(p=>p.kind==='lab').length,9,'Lab index is incomplete');
+assert.equal(built.pages.filter(p=>p.kind==='lab').length,13,'Lab index is incomplete');
+assert.equal(built.extensions.reduce((weeks, s) => weeks + s.duration, 0), 6);
+for (const s of built.extensions) assert(ids.has(s.id));
+await access(new URL('dist/assets/kernel-silicon.webp',root));
 let links=0;
 for(const p of built.pages){
   assert(p.html.length>500,`Empty or placeholder document: ${p.id}`);
@@ -31,4 +34,4 @@ for(const file of ['web/app.js','scripts/build.mjs','scripts/serve.mjs']) {
   const result=spawnSync(process.execPath,['--check',fileURLToPath(new URL(file,root))],{encoding:'utf8'});
   assert.equal(result.status,0,`${file}: ${result.stderr}`);
 }
-console.log(`Content check passed: ${ids.size} documents, ${links} internal links, 32 weeks, 9 labs, all stage/platform routes and heading anchors valid.`);
+console.log(`Content check passed: ${ids.size} documents, ${links} internal links, 32 + 6 weeks, 13 labs, all stage/platform routes and heading anchors valid.`);

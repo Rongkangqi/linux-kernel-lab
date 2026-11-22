@@ -1,6 +1,6 @@
 # 05 · 走进 ARM64 处理器
 
-**第 15–19 周 · QEMU ARM64 · 目标：连接指令执行、异常、地址转换与多核系统。**
+**第 15–19 周 · RK3576 真板，K230 架构对照 · 目标：连接指令执行、异常、地址转换与多核系统。**
 
 ## 先分清四层
 
@@ -12,7 +12,7 @@
 
 学习通用寄存器、PC/SP、PSTATE、系统寄存器与异常向量，区分同步异常、IRQ、FIQ、SError。EL0–EL3 是权限与功能框架，不是所有系统都会把每级都以同一种软件布局使用。普通应用通常在 EL0，常见内核运行在 EL1；虚拟化或 VHE 等配置需要另查。
 
-完成[L06](lab-qemu.md)启动与 GDB 连接。从 `arch/arm64/kernel/head.S` 追到 `start_kernel`，标记进入内核时的启动协议、页表准备、栈与 MMU 状态。区分 Boot ROM、固件、引导加载器和 Linux 自身负责的工作。
+保存 RK3576 正常启动的串口日志，查找内核版本、CPU 和控制台初始化。想在第一行日志前停住内核时，可用 [L06](lab-qemu.md) 在 QEMU 中单步。从 `arch/arm64/kernel/head.S` 追到 `start_kernel`，标记进入内核时的启动协议、页表准备、栈与 MMU 状态。区分 Boot ROM、固件、引导加载器和 Linux 自身负责的工作。
 
 ## 第 17 周：MMU 与 TLB
 
@@ -34,6 +34,6 @@ MMU 执行地址转换与权限检查，TLB 缓存转换结果。修改页表后
 
 ## 阶段验收
 
-交付启动日志、内核配置、GDB 断点记录、一张异常入口图、一张 VA→PA 图、一张 GIC/CPU/设备图。能说明 syscall 和外设中断为何都能进入内核，但触发源与路径不同；能解释 Cache flush 与 TLB invalidate 的区别。
+完成 [L10](lab-fault.md) 对照两种架构的异常入口，做 [L12](lab-k230.md) 区分固件、hart 和操作系统。交付启动日志、内核配置、一张异常入口图、一张 VA→PA 图、一张 GIC/CPU/设备图。能说明 syscall 和外设中断为何都能进入内核，但触发源与路径不同；能解释 Cache flush 与 TLB invalidate 的区别。
 
 一手资料：[Arm A-profile 学习路径](https://www.arm.com/architecture/learn-the-architecture/a-profile)、[异常模型](https://developer.arm.com/documentation/102412/latest)、[内存管理](https://developer.arm.com/documentation/101811/latest)、[ARM64 启动协议](https://docs.kernel.org/arch/arm64/booting.html)。

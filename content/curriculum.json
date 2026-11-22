@@ -1,19 +1,28 @@
 {
   "stages": [
-    {"id":"foundations","number":"00","title":"搭好实验台","weeks":"第 1 周","duration":1,"platform":"WSL2","summary":"工具链、C 指针与证据记录。让每个结论都能复现。","topics":["Shell / Git","C 与构建","版本基线"],"lab":"lab-pid","outcome":"提交第一份进程观察记录"},
-    {"id":"tasks","number":"01","title":"任务如何获得 CPU","weeks":"第 2–4 周","duration":3,"platform":"WSL2","summary":"从 PID / TID 进入 task_struct，再追到调度、睡眠与唤醒。","topics":["进程与线程","调度器","等待与唤醒"],"lab":"lab-wait","outcome":"画出阻塞 read 的任务状态时序"},
-    {"id":"concurrency","number":"02","title":"并发与中断","weeks":"第 5–7 周","duration":3,"platform":"WSL2 → QEMU","summary":"先判断执行上下文，再选择锁、中断下半部和同步方式。","topics":["IRQ / workqueue","锁与原子操作","内存序"],"lab":"lab-lock","outcome":"解释并修复一次竞争条件"},
-    {"id":"memory","number":"03","title":"内存的两副面孔","weeks":"第 8–11 周","duration":4,"platform":"WSL2 → QEMU","summary":"把进程虚拟地址、缺页、物理页与内核分配器连起来。","topics":["VMA / 页表","COW / mmap","伙伴系统 / slab"],"lab":"lab-memory","outcome":"用观测证据解释按需分配与 COW"},
-    {"id":"io","number":"04","title":"从文件到设备","weeks":"第 12–14 周","duration":3,"platform":"WSL2","summary":"通过一个文件描述符连接 VFS、页缓存、块设备与网络。","topics":["VFS / page cache","块 I/O","socket / poll"],"lab":"lab-io","outcome":"画出一次系统调用跨层路径"},
-    {"id":"arm64","number":"05","title":"走进 ARM64 处理器","weeks":"第 15–19 周","duration":5,"platform":"QEMU ARM64","summary":"异常级、启动、MMU、Cache、GIC 与多核协作形成架构骨架。","topics":["EL / 异常入口","MMU / TLB / Cache","GIC / PSCI / SMP"],"lab":"lab-qemu","outcome":"在 GDB 中停住 ARM64 内核并解释地址转换"},
-    {"id":"drivers","number":"06","title":"内核如何管理硬件","weeks":"第 20–23 周","duration":4,"platform":"QEMU → RK3576","summary":"从设备树与 probe 到资源生命周期、DMA 和缓冲区共享。","topics":["设备模型 / DTS","PM / IRQ","DMA / IOMMU / DMA-BUF"],"lab":"lab-dma","outcome":"完成设备资源图与 DMA 生命周期图"},
-    {"id":"rockchip","number":"07","title":"把知识落到 RK3576","weeks":"第 24–27 周","duration":4,"platform":"RK3576 实机","summary":"建立板卡证据，再分析 SoC 时钟、电源、互连与多媒体链路。","topics":["SoC / BSP","时钟 / 复位 / 电源","MPP / 平台对比"],"lab":"lab-board","outcome":"交付一份有源码和日志支撑的芯片地图"},
-    {"id":"capstone","number":"08","title":"贯通一个真实问题","weeks":"第 28–32 周","duration":5,"platform":"RK3576 + QEMU","summary":"用 trace、源码和实验串起提交、DMA、中断、唤醒与用户态返回。","topics":["ftrace / perf","故障定位","端到端项目"],"lab":"lab-mpp","outcome":"完成可复现、可答辩的内核分析报告"}
+    {"id":"foundations","number":"00","title":"搭好实验台","weeks":"第 1 周","duration":1,"platform":"RK3576 · WSL2","summary":"在 WSL2 构建，在 RK3576 上观察第一个多线程程序。","topics":["Shell / Git","C 与构建","版本基线"],"lab":"lab-pid","outcome":"板卡基线与 PID/TID 对照"},
+    {"id":"tasks","number":"01","title":"任务如何获得 CPU","weeks":"第 2–4 周","duration":3,"platform":"RK3576 · WSL2","summary":"从 PID / TID 进入 task_struct，再追到调度、睡眠与唤醒。","topics":["进程与线程","调度器","等待与唤醒"],"lab":"lab-wait","outcome":"画出阻塞 read 的任务状态时序"},
+    {"id":"concurrency","number":"02","title":"并发与中断","weeks":"第 5–7 周","duration":3,"platform":"RK3576 · WSL2","summary":"先判断执行上下文，再选择锁、中断下半部和同步方式。","topics":["IRQ / workqueue","锁与原子操作","内存序"],"lab":"lab-lock","outcome":"解释并修复一次竞争条件"},
+    {"id":"memory","number":"03","title":"内存的两副面孔","weeks":"第 8–11 周","duration":4,"platform":"RK3576 · WSL2","summary":"把进程虚拟地址、缺页、物理页与内核分配器连起来。","topics":["VMA / 页表","COW / mmap","伙伴系统 / slab"],"lab":"lab-memory","outcome":"用观测证据解释按需分配与 COW"},
+    {"id":"io","number":"04","title":"从文件到设备","weeks":"第 12–14 周","duration":3,"platform":"RK3576 · WSL2","summary":"通过一个文件描述符连接 VFS、页缓存、块设备与网络。","topics":["VFS / page cache","块 I/O","socket / poll"],"lab":"lab-io","outcome":"画出一次系统调用跨层路径"},
+    {"id":"arm64","number":"05","title":"ARM64 与 RISC-V","weeks":"第 15–19 周","duration":5,"platform":"RK3576 · K230","summary":"在两种架构上对照缺页与启动，QEMU 用于早期断点。","topics":["异常与页表","GIC / PSCI","hart / SBI"],"lab":"lab-fault","outcome":"两条缺页路径与一份固件交接图"},
+    {"id":"drivers","number":"06","title":"内核如何管理硬件","weeks":"第 20–23 周","duration":4,"platform":"RK3576","summary":"从设备树与 probe 到资源生命周期、DMA 和缓冲区共享。","topics":["设备模型 / DTS","PM / IRQ","DMA / IOMMU / DMA-BUF"],"lab":"lab-dma","outcome":"完成设备资源图与 DMA 生命周期图"},
+    {"id":"rockchip","number":"07","title":"RK3576 板级开发","weeks":"第 24–27 周","duration":4,"platform":"RK3576 · Buildroot","summary":"从工作镜像走到 Buildroot 根文件系统，在独立介质上验证启动。","topics":["SoC / BSP","最小 rootfs","时钟 / 复位 / 电源"],"lab":"lab-rootfs","outcome":"可重建的用户空间与串口启动记录"},
+    {"id":"capstone","number":"08","title":"贯通一个真实问题","weeks":"第 28–32 周","duration":5,"platform":"RK3576","summary":"用 trace、源码和实验串起提交、DMA、中断、唤醒与用户态返回。","topics":["ftrace / perf","故障定位","端到端项目"],"lab":"lab-mpp","outcome":"完成可复现、可答辩的内核分析报告"}
   ],
   "platforms": [
-    {"id":"platform-wsl","name":"WSL2","label":"现在就开始","arch":"宿主架构 / Linux 用户空间","role":"进程、线程、系统调用、内存与工具训练","limit":"内核配置由 WSL 决定；不代表 RK3576 外设与启动链。","tag":"基础实验","color":"sage"},
+    {"id":"platform-rk3576","name":"RK3576","label":"ARM64 主实验板","arch":"4 × Cortex-A72 + 4 × Cortex-A53","role":"从第一周的进程观察到中断、DMA、驱动和系统启动","limit":"以手中板卡 BSP、原理图和实际驱动为准。","tag":"第 1 周起","color":"sand"},
+    {"id":"platform-k230","name":"K230","label":"RISC-V 对照板","arch":"RISC-V / 玄铁 C908","role":"对照异常与页表，追到 OpenSBI 与固件交接","limit":"据具体 SDK 和在线 CPU 判断核分工。","tag":"第 15–19 周","color":"blue"},
+    {"id":"platform-v821","name":"V821","label":"Linux 与实时侧","arch":"RISC-V CPU + MCU","role":"从镜像和设备事件确认两侧的内存与中断归属","limit":"板级连线与固件需要从本板 SDK 核对。","tag":"第 33–34 周","color":"blue"},
+    {"id":"platform-v861","name":"V861","label":"多核与 ABI","arch":"双 C907 + E907 MCU","role":"核对内核、用户空间 ABI，观察 IRQ 与 CPU 调度","limit":"核对具体料号、镜像和在线 CPU。","tag":"第 35–36 周","color":"blue"},
+    {"id":"platform-f101","name":"F101","label":"FreeRTOS 实时系统","arch":"RISC-V / C907","role":"研究实时中断、任务切换和显示缓冲","limit":"按 FreeRTOS 镜像与具体片上资源安排实验。","tag":"第 37–38 周","color":"blue"},
+    {"id":"platform-wsl","name":"WSL2","label":"构建主机","arch":"宿主架构 / Linux 用户空间","role":"Ubuntu 下读源码、构建工具链、交叉编译与整理记录","limit":"内核配置由 WSL 决定；不代表 RK3576 外设与启动链。","tag":"构建工具","color":"sage"},
     {"id":"platform-qemu","name":"QEMU ARM64","label":"可控的内核实验室","arch":"AArch64 / virt 虚拟平台","role":"编译启动、自定义内核、异常与 GDB 调试","limit":"virt 不是 RK3576；跨架构模拟不能验证实机性能。","tag":"架构与调试","color":"blue"},
-    {"id":"platform-rk3576","name":"RK3576","label":"主力芯片平台","arch":"4 × Cortex-A72 + 4 × Cortex-A53","role":"设备树、GIC、时钟电源、DMA 与 MPP 实测","limit":"以手中板卡 BSP、原理图和实际驱动为准。","tag":"实机验证","color":"sand"},
     {"id":"platform-compare","name":"RK3588 对照","label":"学会迁移知识","arch":"4 × Cortex-A76 + 4 × Cortex-A55","role":"对照 CPU 微架构与 SoC 集成，检验可迁移结论","limit":"不要求购买第二块板；先进行文档与源码对照。","tag":"架构比较","color":"lilac"}
+  ],
+  "extensions": [
+    {"id":"platform-v821","weeks":"第 33–34 周","duration":2,"title":"核对 Linux 与实时侧","platform":"V821","summary":"从 SDK、板级资源和外设事件分析两个执行环境。","outcome":"一张双核职责图与一次事件记录"},
+    {"id":"platform-v861","weeks":"第 35–36 周","duration":2,"title":"多核、ABI 与观测","platform":"V861","summary":"核实实际运行模式，采集 CPU 与外设事件。","outcome":"ELF、在线 CPU 和 IRQ 对照表"},
+    {"id":"platform-f101","weeks":"第 37–38 周","duration":2,"title":"实时任务与显示","platform":"F101","summary":"用 SDK 启动图和任务切换解释实时系统。","outcome":"一次中断到任务的交接时间线"}
   ]
 }

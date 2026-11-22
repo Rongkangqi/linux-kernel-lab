@@ -1,6 +1,6 @@
 # 环境与版本基线
 
-前期使用 WSL2 Ubuntu 24.04。系统发行版版本、正在运行的 Linux 内核版本、你阅读的源码版本是三个独立信息，必须分别记录。
+WSL2 Ubuntu 24.04 用作构建主机，RK3576 从第 1 周运行实验。系统发行版版本、正在运行的 Linux 内核版本、你阅读的源码版本是三个独立信息，必须分别记录。
 
 ## 第一次环境检查
 
@@ -29,7 +29,7 @@ mkdir -p ~/kernel-lab/{src,experiments,notes,artifacts}
 sudo apt update
 sudo apt install build-essential git ripgrep strace gdb python3 \
   pkg-config bc bison flex libssl-dev libelf-dev libncurses-dev
-# 到 ARM64 阶段再执行
+# 需要交叉编译或 QEMU 调试时执行
 sudo apt install gcc-aarch64-linux-gnu gdb-multiarch \
   qemu-system-arm cpio xz-utils busybox-static
 ```
@@ -76,3 +76,14 @@ kernel-lab/
 ```
 
 遇到工具缺失先记录报错，再判断是包未安装、权限不足、内核配置缺失还是平台不支持。能在用户空间完成的实验先继续，内核专用功能移到可控的 QEMU 环境。
+
+## 把第一个程序带到 RK3576
+
+在板上运行 `uname -m` 确认是 AArch64 Linux。对于兼容的 Debian/Ubuntu 用户空间，可在 WSL 安装 `gcc-aarch64-linux-gnu`，进入保存了 [L01 源码](lab-pid.md)的目录，编译静态测试程序。板厂 SDK 可使用其提供的编译器和 sysroot。
+
+```bash
+aarch64-linux-gnu-gcc -Wall -O0 -g -static -pthread pid_threads.c -o pid_threads
+file pid_threads
+```
+
+用板上已配置的 SSH 或可移动介质传入程序。在板端实验目录运行 `chmod +x pid_threads` 和 `./pid_threads`，用第二个板端终端观察任务。板上若有编译器也可传源文件直接构建。先确认 ps、strace 等工具及选项可用。系统集成阶段转到 [Armbian 与 Buildroot](system-buildroot.md)。

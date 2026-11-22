@@ -44,3 +44,10 @@
 ## 参考书如何使用
 
 经典内核书可帮助形成框架，但其中调度器、锁、VMA 容器、驱动 API 和 ARM 启动细节可能与现版本不同。用书建立问题，用源码与实验确认当前答案。主线阶段不需要为了“准备充分”购买大量书籍。
+
+## RISC-V、系统构建与全志平台
+
+- 在[RISC-V 特权架构规范](https://docs.riscv.org/reference/isa/priv/priv-index.html)查异常原因与地址转换，在[Linux RISC-V 启动文档](https://docs.kernel.org/arch/riscv/boot.html)核对入口参数。
+- [嘉楠 K230 SDK](https://github.com/kendryte/k230_sdk)提供经典双系统源码与镜像规则。配套实验见 [L12](lab-k230.md)。
+- [Buildroot 手册](https://buildroot.org/downloads/manual/manual.html)覆盖工具链、defconfig、rootfs overlay 和 BR2_EXTERNAL。[Armbian 文档](https://docs.armbian.com/)用于核对板型与镜像。
+- [V821](https://www.allwinnertech.com/index.php?c=product&id=136)、[V861](https://www.allwinnertech.com/index.php?a=index&c=product&id=148)、[F101](https://www.allwinnertech.com/index.php?a=index&c=product&id=155)分别查规格，配合所用板卡、固件与 SDK 取证。
